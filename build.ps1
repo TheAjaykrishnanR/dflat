@@ -1,5 +1,3 @@
-# Run from Visual Studio Developer Console
-
 # cleanup
 rm *exe
 rm *.obj
@@ -56,10 +54,9 @@ $obj = "$program.obj"
 	--feature:System.StartupHookProvider.IsSupported=false `
 	--directpinvokelist:"$cwd\libs\WindowsAPIs.txt" `
 	--directpinvoke:System.Globalization.Native `
-	--directpinvoke:System.IO.Compression.Native `
+	--directpinvoke:System.IO.Compression.Native 
 
-# Linking
-link $obj `
+.\linker\lld-link $obj `
 	"${aotsdk}\bootstrapper.obj" `
 	"${aotsdk}\dllmain.obj" `
 	"${aotsdk}\Runtime.ServerGC.lib" `
