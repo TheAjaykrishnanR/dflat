@@ -1,0 +1,7 @@
+*.exe
+*.dll
+*.lib
+*.obj
+*.xml
+*.pdb
+*.rsp
