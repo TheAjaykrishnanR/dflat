@@ -9,7 +9,7 @@ $program = $csFile.Replace(".cs", "")
 $cwd = $(Get-Location).Path
 
 # .cs -> IL [csc.exe]
-$refFolder = ".\libs\microsoft.netcore.app.ref\ref\net10.0"
+$refFolder = ".\libs\ref"
 $refs = @()
 foreach($dll in Get-ChildItem $refFolder | Where-Object -Property Name -Like "*dll") 
 {
@@ -25,7 +25,7 @@ $obj = "$program.obj"
 	$ilexe `
 	--out $obj `
 	-r:"$aotsdk\*.dll" `
-	-r:"$cwd\libs\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net10.0\*.dll" `
+	-r:"$cwd\libs\runtime\*.dll" `
 	-g `
 	--generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN `
 	--dehydrate `
@@ -43,7 +43,7 @@ $obj = "$program.obj"
 	--feature:System.Globalization.Invariant=true `
 	--feature:System.Diagnostics.Debugger.IsSupported=false `
 	--feature:System.StartupHookProvider.IsSupported=false `
-	--directpinvokelist:C:\Users\Jayakuttan\dev\dotnet\runtime\artifacts\bin\coreclr\windows.x64.Release\build\WindowsAPIs.txt `
+	--directpinvokelist:"$cwd\libs\WindowsAPIs.txt" `
 	--directpinvoke:System.Globalization.Native `
 	--directpinvoke:System.IO.Compression.Native `
 
