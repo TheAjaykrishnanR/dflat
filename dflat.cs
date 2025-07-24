@@ -4,17 +4,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using System.CommandLine;
+using System.CommandLine.Invocation;
+
+#nullable enable
 
 class Dflat
 {
-	static string home = new FileInfo(Environment.ProcessPath).Directory.FullName;
-	static string cwd = Directory.GetCurrentDirectory();
-	static string csc = Path.Join(home, @"csc\csc.exe");
-	static string ilc = Path.Join(home, @"ilc\ilc.exe");
-	static string linker = Path.Join(home, @"linker\lld-link.exe");
-	static string aotsdk = Path.Join(home, @"libs\aotsdk");
-	static string refs = Path.Join(home, @"libs\refs");
-	static string runtime = Path.Join(home, @"libs\runtime");
+	public static string home = new FileInfo(Environment.ProcessPath).Directory.FullName;
+	public static string cwd = Directory.GetCurrentDirectory();
+	public static string csc = Path.Join(home, @"csc\csc.exe");
+	public static string ilc = Path.Join(home, @"ilc\ilc.exe");
+	public static string linker = Path.Join(home, @"linker\lld-link.exe");
+	public static string aotsdk = Path.Join(home, @"libs\aotsdk");
+	public static string refs = Path.Join(home, @"libs\refs");
+	public static string runtime = Path.Join(home, @"libs\runtime");
 
 	static List<string> externalLibs = new();
 
@@ -30,30 +33,31 @@ class Dflat
 		if (!Directory.Exists(refs)) throw new Exception($"{refs} not found");
 		if (!Directory.Exists(runtime)) throw new Exception($"{runtime} not found");
 
-		Argument<FileInfo> sourceFileArg = new("SOURCE")
-		{
-			Description = ".cs file to compile",
-		};
-		Option<bool> justILFlag = new("/il")
-		{
-			Description = "just compile to IL",
-		};
-		Option<string[]> externalLibsOption = new("/r")
-		{
-			Description = "additional reference .dlls or folders containing them",
-		};
-		Option<bool> verbosity = new("/v")
-		{
-			Description = "set verbosity",
-		};
+		Argument<FileInfo> sourceFileArg = new("SOURCE") { Description = ".cs file to compile", };
+		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
+		Option<string[]> externalLibsOption = new("/r") { Description = "Additional reference .dlls or folders containing them", };
+		Option<bool> verbosity = new("/verbosity") { Description = "Set verbosity", };
+		Option<string> outputArg = new("/out") { Description = "Output file name", };
 		RootCommand cmd = new("dflat, a native aot compiler for c#") {
 			sourceFileArg,
+			outputArg,
 			externalLibsOption,
 			justILFlag,
 			verbosity,
 		};
+		// override defaults
+		for (int i = 0; i < cmd.Options.Count; i++)
+		{
+			if (cmd.Options[i].GetType() == typeof(VersionOption))
+			{
+				VersionOption vo = new("/version", []);
+				vo.Action = new CustomVersionAction();
+				cmd.Options[i] = vo;
+			}
+		}
 		cmd.SetAction(result =>
 		{
+			List<string> cscExtraArgs = new(), ilcExtraArgs = new();
 			FileInfo sourceFile = result.GetValue(sourceFileArg);
 			if (!sourceFile.Exists)
 			{
@@ -65,10 +69,7 @@ class Dflat
 				Console.Error.WriteLine($"please input a .cs file");
 				return;
 			}
-			if (result.GetValue(verbosity))
-			{
-				verbose = true;
-			}
+			if (result.GetValue(verbosity)) { verbose = true; }
 			foreach (string path in result.GetValue(externalLibsOption))
 			{
 				if (!File.Exists(path))
@@ -86,8 +87,9 @@ class Dflat
 				}
 				externalLibs.Add(new FileInfo(path).FullName);
 			}
-			Compile(sourceFile);
+			Compile(sourceFile, result.GetValue(outputArg), cscExtraArgs, ilcExtraArgs);
 		});
+
 		cmd.Parse(args).Invoke();
 	}
 
@@ -97,23 +99,25 @@ class Dflat
 	static string obj;
 	static string exe;
 
-	static void Compile(FileInfo sourceFile)
+	static void Compile(FileInfo sourceFile, string? exeOut, List<string> cscExtraArgs, List<string> ilcExtraArgs)
 	{
 		// set paths
 		Directory.CreateDirectory(tmpDir);
-		program = sourceFile.Name.Replace(".cs", "");
+		program = exeOut == null ? sourceFile.Name.Replace(".cs", "") : exeOut.Replace(".exe", "");
 		ilexe = Path.Join(tmpDir, $"{program}.il.exe");
 		obj = Path.Join(tmpDir, $"{program}.obj");
-		exe = Path.Join(tmpDir, $"{program}.exe");
+		exe = Path.Join(cwd, $"{program}.exe");
 
-		if (!HandleError(CscCompile(sourceFile))) return;
-		if (!HandleError(ILCompile())) return;
+		if (!HandleError(CscCompile(sourceFile, cscExtraArgs))) return;
+		if (!HandleError(ILCompile(ilcExtraArgs))) return;
 		if (!HandleError(Link())) return;
+
+		Directory.Delete(tmpDir, recursive: true);
 	}
 
 	static bool HandleError(bool result)
 	{
-		//if (!result) Directory.Delete(tmpDir);
+		if (!result) Directory.Delete(tmpDir, recursive: true);
 		return result;
 	}
 
@@ -123,10 +127,10 @@ class Dflat
 		if (verbose) Console.WriteLine(text);
 	}
 
-	static bool CscCompile(FileInfo sourceFile, string[] args = null)
+	static bool CscCompile(FileInfo sourceFile, List<string> args)
 	{
 		Log("CSCCompile...");
-		string argString = $"{sourceFile.FullName} /noconfig /out:{ilexe}";
+		string argString = $"{sourceFile.FullName} /noconfig /out:{ilexe} /nologo";
 		foreach (string dll in Directory.GetFiles(refs).Where(file => file.EndsWith(".dll")))
 		{
 			argString += $" /r:{new FileInfo(dll).FullName}";
@@ -135,15 +139,21 @@ class Dflat
 		{
 			argString += $" /r:{dll}";
 		}
-		args = args ?? [];
 		foreach (string arg in args)
 		{
 			argString += $" {arg}";
 		}
 		Log(argString);
+		CallCompiler(csc, argString);
+		var exists = File.Exists(ilexe);
+		return exists;
+	}
+
+	public static void CallCompiler(string compiler, string argString)
+	{
 		ProcessStartInfo psi = new()
 		{
-			FileName = csc,
+			FileName = compiler,
 			Arguments = argString,
 		};
 		Process process = new()
@@ -152,11 +162,9 @@ class Dflat
 		};
 		process.Start();
 		process.WaitForExit();
-		var exists = File.Exists(ilexe);
-		return exists;
 	}
 
-	static bool ILCompile(string[] args = null)
+	static bool ILCompile(List<string> args)
 	{
 		Log("ILCompile...");
 		string argString = $"{ilexe} --out:{obj}";
@@ -187,17 +195,7 @@ class Dflat
 		argString += $" --directpinvoke:System.Globalization.Native";
 		argString += $" --directpinvoke:System.IO.Compression.Native";
 		Log(argString);
-		ProcessStartInfo psi = new()
-		{
-			FileName = ilc,
-			Arguments = argString,
-		};
-		Process process = new()
-		{
-			StartInfo = psi,
-		};
-		process.Start();
-		process.WaitForExit();
+		CallCompiler(ilc, argString);
 		return File.Exists(obj);
 	}
 
@@ -224,6 +222,7 @@ class Dflat
 		argString += $" bcrypt.lib";
 		argString += $" user32.lib";
 		argString += $" kernel32.lib";
+		argString += $" version.lib";
 		Log(argString);
 		ProcessStartInfo psi = new()
 		{
@@ -240,3 +239,15 @@ class Dflat
 	}
 }
 
+class CustomVersionAction : SynchronousCommandLineAction
+{
+	public override int Invoke(ParseResult ps)
+	{
+		Console.Write($"CSC: ");
+		Dflat.CallCompiler(Dflat.csc, "/version");
+		Console.Write($"ILC: ");
+		Dflat.CallCompiler(Dflat.ilc, "--version");
+		Console.WriteLine($"Runtime: {FileVersionInfo.GetVersionInfo(Path.Join(Dflat.runtime, "System.dll")).ProductVersion}");
+		return 0;
+	}
+}

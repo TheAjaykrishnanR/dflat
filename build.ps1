@@ -76,6 +76,7 @@ $obj = "$program.obj"
 	bcrypt.lib `
 	user32.lib `
 	kernel32.lib `
+	version.lib `
 	/subsystem:console `
 	"/out:$program.exe" `
 
