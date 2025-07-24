@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.CommandLine;
 using System.Diagnostics;
+using System.CommandLine;
 
 class Dflat
 {
@@ -22,9 +22,20 @@ class Dflat
 		if (!Directory.Exists(refs)) throw new Exception($"{refs} not found");
 		if (!Directory.Exists(runtime)) throw new Exception($"{runtime} not found");
 
-		RootCommand rootCommand = new(
-			description: "C# Native Aot Compiler"
-		);
+		Argument<FileInfo> sourceFileArg = new("SOURCE")
+		{
+			Description = ".cs file to compile",
+		};
+		RootCommand cmd = new("dflat, a native aot compiler for c#") {
+			sourceFileArg
+		};
+		ParseResult ps = cmd.Parse(args);
+
+		ps.Invoke();
+	}
+
+	static void Compile()
+	{
 
 	}
 
@@ -44,3 +55,4 @@ class Dflat
 
 	}
 }
+
