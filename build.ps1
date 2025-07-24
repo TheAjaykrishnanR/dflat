@@ -68,3 +68,8 @@ link $obj `
 	bcrypt.lib `
 	/subsystem:console `
 	"/out:$program.exe" `
+
+# cleanup
+rm "$program.il.exe"
+rm "$program.obj"
+
