@@ -7,12 +7,14 @@ using System.CommandLine;
 
 class Dflat
 {
-	static string csc = @"csc\csc.exe";
-	static string ilc = @"ilc\ilc.exe";
-	static string linker = @"linker\lld-link.exe";
-	static string aotsdk = @"libs\aotsdk";
-	static string refs = @"libs\refs";
-	static string runtime = @"libs\runtime";
+	static string home = new FileInfo(Environment.ProcessPath).Directory.FullName;
+	static string cwd = Directory.GetCurrentDirectory();
+	static string csc = Path.Join(home, @"csc\csc.exe");
+	static string ilc = Path.Join(home, @"ilc\ilc.exe");
+	static string linker = Path.Join(home, @"linker\lld-link.exe");
+	static string aotsdk = Path.Join(home, @"libs\aotsdk");
+	static string refs = Path.Join(home, @"libs\refs");
+	static string runtime = Path.Join(home, @"libs\runtime");
 
 	static List<string> externalLibs = new();
 
@@ -40,10 +42,15 @@ class Dflat
 		{
 			Description = "additional reference .dlls or folders containing them",
 		};
+		Option<bool> verbosity = new("/v")
+		{
+			Description = "set verbosity",
+		};
 		RootCommand cmd = new("dflat, a native aot compiler for c#") {
 			sourceFileArg,
 			externalLibsOption,
-			justILFlag
+			justILFlag,
+			verbosity,
 		};
 		cmd.SetAction(result =>
 		{
@@ -73,7 +80,6 @@ class Dflat
 					}
 					continue;
 				}
-				Console.WriteLine($"adding {path}");
 				externalLibs.Add(new FileInfo(path).FullName);
 			}
 			Compile(sourceFile);
@@ -81,7 +87,6 @@ class Dflat
 		cmd.Parse(args).Invoke();
 	}
 
-	static string cwd = Directory.GetCurrentDirectory();
 	static string tmpDir = Path.Join(cwd, ".dflat.tmp");
 	static string program;
 	static string ilexe;
@@ -114,7 +119,7 @@ class Dflat
 		string argString = $"{sourceFile.FullName} /noconfig /out:{ilexe}";
 		foreach (string dll in Directory.GetFiles(refs).Where(file => file.EndsWith(".dll")))
 		{
-			argString += $" /r:{Path.Join(cwd, dll)}";
+			argString += $" /r:{new FileInfo(dll).FullName}";
 		}
 		foreach (string dll in externalLibs)
 		{
@@ -146,8 +151,8 @@ class Dflat
 	{
 		Console.WriteLine("ILCompile...");
 		string argString = $"{ilexe} --out:{obj}";
-		argString += $" -r:{Path.Join(cwd, aotsdk, "*.dll")}";
-		argString += $" -r:{Path.Join(cwd, runtime, "*.dll")}";
+		argString += $" -r:{Path.Join(aotsdk, "*.dll")}";
+		argString += $" -r:{Path.Join(runtime, "*.dll")}";
 		foreach (string dll in externalLibs)
 		{
 			argString += $" -r:{dll}";
@@ -169,7 +174,7 @@ class Dflat
 		argString += $" --feature:System.Globalization.Invariant=true";
 		argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
 		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
-		argString += $" --directpinvokelist:{Path.Join(cwd, @"libs\WindowsAPIs.txt")}";
+		argString += $" --directpinvokelist:{Path.Join(home, @"libs\WindowsAPIs.txt")}";
 		argString += $" --directpinvoke:System.Globalization.Native";
 		argString += $" --directpinvoke:System.IO.Compression.Native";
 		ProcessStartInfo psi = new()
@@ -189,20 +194,20 @@ class Dflat
 	static bool Link()
 	{
 		string argString = $"{obj} /out:{exe} /subsystem:console";
-		argString += $" {Path.Join(cwd, aotsdk, "bootstrapper.obj")}";
-		argString += $" {Path.Join(cwd, aotsdk, "dllmain.obj")}";
-		argString += $" {Path.Join(cwd, aotsdk, "Runtime.ServerGC.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "standalonegc-disabled.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "aotminipal.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "brotlicommon.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "eventpipe-enabled.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "Runtime.WorkstationGC.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "brotlidec.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "brotlienc.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "Runtime.VxsortEnabled.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "System.Globalization.Native.Aot.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "System.IO.Compression.Native.Aot.lib")}";
-		argString += $" {Path.Join(cwd, aotsdk, "zlibstatic.lib")}";
+		argString += $" {Path.Join(aotsdk, "bootstrapper.obj")}";
+		argString += $" {Path.Join(aotsdk, "dllmain.obj")}";
+		argString += $" {Path.Join(aotsdk, "Runtime.ServerGC.lib")}";
+		argString += $" {Path.Join(aotsdk, "standalonegc-disabled.lib")}";
+		argString += $" {Path.Join(aotsdk, "aotminipal.lib")}";
+		argString += $" {Path.Join(aotsdk, "brotlicommon.lib")}";
+		argString += $" {Path.Join(aotsdk, "eventpipe-enabled.lib")}";
+		argString += $" {Path.Join(aotsdk, "Runtime.WorkstationGC.lib")}";
+		argString += $" {Path.Join(aotsdk, "brotlidec.lib")}";
+		argString += $" {Path.Join(aotsdk, "brotlienc.lib")}";
+		argString += $" {Path.Join(aotsdk, "Runtime.VxsortEnabled.lib")}";
+		argString += $" {Path.Join(aotsdk, "System.Globalization.Native.Aot.lib")}";
+		argString += $" {Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}";
+		argString += $" {Path.Join(aotsdk, "zlibstatic.lib")}";
 		argString += $" advapi32.lib";
 		argString += $" ole32.lib";
 		argString += $" bcrypt.lib";
