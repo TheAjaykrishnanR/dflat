@@ -65,6 +65,10 @@ class Dflat
 				Console.Error.WriteLine($"please input a .cs file");
 				return;
 			}
+			if (result.GetValue(verbosity))
+			{
+				verbose = true;
+			}
 			foreach (string path in result.GetValue(externalLibsOption))
 			{
 				if (!File.Exists(path))
@@ -113,9 +117,15 @@ class Dflat
 		return result;
 	}
 
+	static bool verbose = false;
+	static void Log(string text)
+	{
+		if (verbose) Console.WriteLine(text);
+	}
+
 	static bool CscCompile(FileInfo sourceFile, string[] args = null)
 	{
-		Console.WriteLine("CSCCompile...");
+		Log("CSCCompile...");
 		string argString = $"{sourceFile.FullName} /noconfig /out:{ilexe}";
 		foreach (string dll in Directory.GetFiles(refs).Where(file => file.EndsWith(".dll")))
 		{
@@ -125,12 +135,12 @@ class Dflat
 		{
 			argString += $" /r:{dll}";
 		}
-		Console.WriteLine(argString);
 		args = args ?? [];
 		foreach (string arg in args)
 		{
 			argString += $" {arg}";
 		}
+		Log(argString);
 		ProcessStartInfo psi = new()
 		{
 			FileName = csc,
@@ -143,13 +153,12 @@ class Dflat
 		process.Start();
 		process.WaitForExit();
 		var exists = File.Exists(ilexe);
-		Console.WriteLine($"{ilexe}: {exists}");
 		return exists;
 	}
 
 	static bool ILCompile(string[] args = null)
 	{
-		Console.WriteLine("ILCompile...");
+		Log("ILCompile...");
 		string argString = $"{ilexe} --out:{obj}";
 		argString += $" -r:{Path.Join(aotsdk, "*.dll")}";
 		argString += $" -r:{Path.Join(runtime, "*.dll")}";
@@ -177,6 +186,7 @@ class Dflat
 		argString += $" --directpinvokelist:{Path.Join(home, @"libs\WindowsAPIs.txt")}";
 		argString += $" --directpinvoke:System.Globalization.Native";
 		argString += $" --directpinvoke:System.IO.Compression.Native";
+		Log(argString);
 		ProcessStartInfo psi = new()
 		{
 			FileName = ilc,
@@ -193,6 +203,7 @@ class Dflat
 
 	static bool Link()
 	{
+		Log("Linking...");
 		string argString = $"{obj} /out:{exe} /subsystem:console";
 		argString += $" {Path.Join(aotsdk, "bootstrapper.obj")}";
 		argString += $" {Path.Join(aotsdk, "dllmain.obj")}";
@@ -213,6 +224,7 @@ class Dflat
 		argString += $" bcrypt.lib";
 		argString += $" user32.lib";
 		argString += $" kernel32.lib";
+		Log(argString);
 		ProcessStartInfo psi = new()
 		{
 			FileName = linker,
