@@ -5,18 +5,28 @@ rm *exe
 rm *.obj
 
 $csFile = $args[0]
+if($args.Length -eq 0) { 
+	Write-Host "specify a source file"
+	return 
+}
 $program = $csFile.Replace(".cs", "")
 $cwd = $(Get-Location).Path
 
 # .cs -> IL [csc.exe]
-$refFolder = ".\libs\ref"
+$refFolder = ".\libs\refs"
 $refs = @()
 foreach($dll in Get-ChildItem $refFolder | Where-Object -Property Name -Like "*dll") 
 {
 	$refs += "/r:$($dll.FullName) "
 }
+$extrasFolder = ".\libs\extras"
+$extras = @()
+foreach($dll in Get-ChildItem $extrasFolder | Where-Object -Property Name -Like "*dll") 
+{
+	$extras += "/r:$($dll.FullName) "
+}
 $ilexe = "$program.il.exe";
-.\csc\csc $csFile @refs "/out:$ilexe"
+.\csc\csc $csFile @refs @extras "/out:$ilexe"
 
 # IL -> Bytecode [ILCompiler dotnet\runtime\artifacts\bin\coreclr\windows.x64.Release\x64\ilc\ilc.exe]
 $aotsdk = "$cwd\libs\aotsdk"
@@ -26,6 +36,7 @@ $obj = "$program.obj"
 	--out $obj `
 	-r:"$aotsdk\*.dll" `
 	-r:"$cwd\libs\runtime\*.dll" `
+	-r:"$cwd\libs\extras\*.dll" `
 	-g `
 	--generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN `
 	--dehydrate `
@@ -66,6 +77,8 @@ link $obj `
 	advapi32.lib `
 	ole32.lib `
 	bcrypt.lib `
+	user32.lib `
+	kernel32.lib `
 	/subsystem:console `
 	"/out:$program.exe" `
 
