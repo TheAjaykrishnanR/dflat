@@ -1,4 +1,4 @@
-Remove-Item Alias:rm
+Remove-Item -Revurse -Force -Confirm dflat
 
 rm -rf dflat
 mkdir dflat
