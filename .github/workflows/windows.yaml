@@ -8,5 +8,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Script
-        run: .\script.ps1
+        run: .\assemble.ps1
         shell: powershell
