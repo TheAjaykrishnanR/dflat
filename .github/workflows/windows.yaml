@@ -11,6 +11,6 @@ jobs:
         run: .\assemble.ps1
         shell: powershell
       - uses: lhotari/action-upterm@v1
-      - with:
+        with:
           limit-access-to-actor: true 
           wait-timeout-minutes: 5 
