@@ -1,0 +1,11 @@
+name: Windows PowerShell
+
+jobs:
+  build:
+    name: Run Script
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Script
+        run: .\script.ps1
+        shell: powershell
