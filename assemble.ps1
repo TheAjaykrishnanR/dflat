@@ -1,3 +1,5 @@
+Remove-Item Alias:rm
+
 rm -rf dflat
 mkdir dflat
 mkdir -p dflat\csc
