@@ -38,12 +38,21 @@ class Dflat
 		Option<string[]> externalLibsOption = new("/r") { Description = "Additional reference .dlls or folders containing them", };
 		Option<bool> verbosity = new("/verbosity") { Description = "Set verbosity", };
 		Option<string> outputArg = new("/out") { Description = "Output file name", };
+		Option<bool> langversion = new("/langversion") { Description = "Print supported lang versions", };
+		langversion.Action = new LangversionAction();
+		Option<CSCTargets> targetsOption = new("/target") { Description = "Specify the target", };
+		Option<CSCPlatforms> platformOption = new("/platform") { Description = "Specify the platform", };
+		Option<bool> optimizeFlag = new("/optimize") { Description = "optimize", };
 		RootCommand cmd = new("dflat, a native aot compiler for c#") {
 			sourceFileArg,
 			outputArg,
 			externalLibsOption,
 			justILFlag,
 			verbosity,
+			langversion,
+			targetsOption,
+			platformOption,
+			optimizeFlag,
 		};
 		// override defaults
 		for (int i = 0; i < cmd.Options.Count; i++)
@@ -57,7 +66,6 @@ class Dflat
 		}
 		cmd.SetAction(result =>
 		{
-			List<string> cscExtraArgs = new(), ilcExtraArgs = new();
 			FileInfo sourceFile = result.GetValue(sourceFileArg);
 			if (!sourceFile.Exists)
 			{
@@ -87,6 +95,10 @@ class Dflat
 				}
 				externalLibs.Add(new FileInfo(path).FullName);
 			}
+			List<string> cscExtraArgs = new(), ilcExtraArgs = new();
+			if (result.GetValue(targetsOption) != null) cscExtraArgs.Add($"/target:{result.GetValue(targetsOption).ToString()}");
+			if (result.GetValue(platformOption) != null) cscExtraArgs.Add($"/platform:{result.GetValue(platformOption).ToString()}");
+			if (result.GetValue(optimizeFlag)) { cscExtraArgs.Add("/O"); ilcExtraArgs.Add("--optimize"); }
 			Compile(sourceFile, result.GetValue(outputArg), cscExtraArgs, ilcExtraArgs);
 		});
 
@@ -130,7 +142,7 @@ class Dflat
 	static bool CscCompile(FileInfo sourceFile, List<string> args)
 	{
 		Log("CSCCompile...");
-		string argString = $"{sourceFile.FullName} /noconfig /out:{ilexe} /nologo";
+		string argString = $"{sourceFile.FullName} /noconfig /out:{ilexe} /nologo /nostdlib /nosdkpath /unsafe";
 		foreach (string dll in Directory.GetFiles(refs).Where(file => file.EndsWith(".dll")))
 		{
 			argString += $" /r:{new FileInfo(dll).FullName}";
@@ -250,4 +262,33 @@ class CustomVersionAction : SynchronousCommandLineAction
 		Console.WriteLine($"Runtime: {FileVersionInfo.GetVersionInfo(Path.Join(Dflat.runtime, "System.dll")).ProductVersion}");
 		return 0;
 	}
+}
+
+class LangversionAction : SynchronousCommandLineAction
+{
+	public override int Invoke(ParseResult ps)
+	{
+		Dflat.CallCompiler(Dflat.csc, "/langversion:?");
+		return 0;
+	}
+}
+
+enum CSCTargets
+{
+	EXE,
+	WINEXE,
+	MODULE,
+	LIBRARY,
+	APPCONTAINEREXE
+}
+
+enum CSCPlatforms
+{
+	x86,
+	Itamium,
+	x64,
+	arm,
+	arm64,
+	anycpu32bitpreferred,
+	anycpu
 }
