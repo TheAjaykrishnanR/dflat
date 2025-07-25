@@ -10,3 +10,9 @@ jobs:
       - name: Script
         run: .\assemble.ps1
         shell: powershell
+    name: Debug with ssh
+    steps:
+      - uses: lhotari/action-upterm@v1
+      - with:
+          limit-access-to-actor: true 
+          wait-timeout-minutes: 5 
