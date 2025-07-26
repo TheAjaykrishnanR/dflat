@@ -35,6 +35,7 @@ class Dflat
 		if (!Directory.Exists(refs)) throw new Exception($"{refs} not found");
 		if (!Directory.Exists(runtime)) throw new Exception($"{runtime} not found");
 		if (!Directory.Exists(kits)) throw new Exception($"{kits} not found");
+		if (!Directory.Exists(msvc)) throw new Exception($"{msvc} not found");
 
 		Argument<FileInfo> sourceFileArg = new("SOURCE") { Description = ".cs file to compile", };
 		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
