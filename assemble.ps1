@@ -33,10 +33,10 @@ mkdir -p build\libs\runtime
 # Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.pdb"
 
 # lld-link (llvm)
-curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
-mkdir llvm
-.github\utils\xz -d llvm.tar.xz --verbose
-cp llvm\bin\lld-link.exe build\linker\lld-link.exe
+# curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
+# mkdir llvm
+winget install -e --id 7zip.7zip
+# cp llvm\bin\lld-link.exe build\linker\lld-link.exe
 
 # compile dflat.cs
 # cp compile.ps1 build\compile.ps1
