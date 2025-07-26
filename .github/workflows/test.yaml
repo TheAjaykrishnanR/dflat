@@ -1,4 +1,4 @@
-name: Windows PowerShell
+name: Test 
 on: [workflow_dispatch]
 
 jobs:
