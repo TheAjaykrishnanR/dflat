@@ -1,10 +1,6 @@
-Remove-Item -Recurse -Force -Confirm dflat
-
-rm -rf dflat
-mkdir dflat
-mkdir -p dflat\csc
-mkdir -p dflat\ilc
-mkdir -p dflat\linker
+mkdir -p build\csc
+mkdir -p build\ilc
+mkdir -p build\linker
 
 # build csc (dotnet\roslyn)
 
