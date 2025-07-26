@@ -6,11 +6,6 @@ jobs:
     name: Run Script
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Script
+      - name: Run Script 
         run: .\assemble.ps1
         shell: pwsh
-      - uses: lhotari/action-upterm@v1
-        with:
-          limit-access-to-actor: true 
-          wait-timeout-minutes: 5 
