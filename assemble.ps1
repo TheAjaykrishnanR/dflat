@@ -46,7 +46,7 @@ $kitlibs = @("advapi32", "bcrypt", "crypt32", "iphlpapi", "kernel32", "mswsock",
 curl -Lo ms-downloader.py https://gist.github.com/TheAjaykrishnanR/1ed9254e7bf20bfbabb667124e331d21/raw/b3f026554d2a646a28c0a74dd24dbd4a6f15eb2f/portable-msvc.py 
 python ms-downloader.py --sdk-version 26100
 foreach($name in $kitlibs) {
-	& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\Windows Kits\10\Lib\10.0.26100.0\um\x64\$name.lib" build\kits\$name.lib
+	& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\Windows Kits\10\Lib\10.0.26100.0\um\x64\$name.lib" build\libs\kits\$name.lib
 }
 
 # compile dflat.cs
