@@ -5,13 +5,13 @@ mkdir -p build\libs\refs
 mkdir -p build\libs\runtime
 
 # build csc (dotnet\roslyn)
-git clone --depth 1 -b main https://github.com/dotnet/roslyn 
-rm roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
-cp .github\diffs\csc.csproj roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
-roslyn\restore.cmd
-roslyn\.dotnet\dotnet.exe publish roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj 
-
-cp roslyn\artifacts\bin\csc\Release\net9.0\win-x64\publish\csc.exe build\dflat\csc\csc.exe
+# git clone --depth 1 -b main https://github.com/dotnet/roslyn 
+# rm roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
+# cp .github\diffs\csc.csproj roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
+# roslyn\restore.cmd
+# roslyn\.dotnet\dotnet.exe publish roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj 
+# 
+# cp roslyn\artifacts\bin\csc\Release\net9.0\win-x64\publish\csc.exe build\csc\csc.exe
 
 # build ilc, runtime, libs (dotnet\runtime)
 git clone --depth 1 -b main https://github.com/dotnet/runtime
