@@ -7,10 +7,13 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-    - uses: actions/checkout@v4
     - name: Run assemble script
       run: .\assemble.ps1
       shell: pwsh
-       
+    - uses: actions/checkout@v4
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 5
+      with:
+        limit-access-to-actor: true
+           
