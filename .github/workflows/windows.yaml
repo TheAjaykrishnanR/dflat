@@ -6,8 +6,11 @@ jobs:
     name: Run Script
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Assemble Script
-        run: .\assemble.ps1
-        shell: pwsh
+    - uses: actions/checkout@v4
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+    - uses: actions/checkout@v4
+    - name: Run assemble script
+      run: .\assemble.ps1
+      shell: pwsh
        
