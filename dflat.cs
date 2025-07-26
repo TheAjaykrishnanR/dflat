@@ -232,11 +232,19 @@ class Dflat
 		argString += $" {Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}";
 		argString += $" {Path.Join(aotsdk, "zlibstatic.lib")}";
 		argString += $" {Path.Join(kits, "advapi32.lib")}";
-		argString += $" {Path.Join(kits, "ole32.lib")}";
 		argString += $" {Path.Join(kits, "bcrypt.lib")}";
-		argString += $" {Path.Join(kits, "user32.lib")}";
+		argString += $" {Path.Join(kits, "crypt32.lib")}";
+		argString += $" {Path.Join(kits, "iphlpapi.lib")}";
 		argString += $" {Path.Join(kits, "kernel32.lib")}";
+		argString += $" {Path.Join(kits, "mswsock.lib")}";
+		argString += $" {Path.Join(kits, "ncrypt.lib")}";
+		argString += $" {Path.Join(kits, "ntdll.lib")}";
+		argString += $" {Path.Join(kits, "ole32.lib")}";
+		argString += $" {Path.Join(kits, "oleaut32.lib")}";
+		argString += $" {Path.Join(kits, "secur32.lib")}";
+		argString += $" {Path.Join(kits, "user32.lib")}";
 		argString += $" {Path.Join(kits, "version.lib")}";
+		argString += $" {Path.Join(kits, "ws2_32.lib")}";
 		Log(argString);
 		ProcessStartInfo psi = new()
 		{
