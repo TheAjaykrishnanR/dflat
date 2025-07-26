@@ -1,0 +1,14 @@
+advapi32
+bcrypt
+crypt32
+iphlpapi
+kernel32
+mswsock
+ncrypt
+ntdll
+ole32
+oleaut32
+secur32
+version
+ws2_32
+user32

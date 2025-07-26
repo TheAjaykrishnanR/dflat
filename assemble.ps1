@@ -64,5 +64,4 @@ Remove-Item -Recurse -Force -Confirm:$false .\libs\extras
 cd ..
 
 # pack
-Compress-Archive .\build dflat-win-x64.zip
-
+Compress-Archive .\build\* dflat-win-x64.zip
