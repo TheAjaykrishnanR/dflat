@@ -4,6 +4,7 @@ mkdir -p build\linker
 mkdir -p build\libs\aotsdk
 mkdir -p build\libs\refs
 mkdir -p build\libs\runtime
+mkdir -p build\libs\extras
 
 # build csc (dotnet\roslyn)
 git clone --depth 1 -b main https://github.com/dotnet/roslyn 
@@ -37,12 +38,17 @@ mkdir llvm
 cp llvm\*\bin\lld-link.exe build\linker\lld-link.exe
 
 # compile dflat.cs
+curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
+mv System.CommandLine.nupkg System.CommandLine.zip
+Expand-Archive System.CommandLine.zip
+& "C:\Program Files\Git\usr\bin\cp.exe" "System.CommandLine/lib/net8.0/System.CommandLine.dll" "build/libs/extras/System.CommandLine.dll"
 cp compile.ps1 build\compile.ps1
 cp dflat.cs build\dflat.cs
 cd build
 .\compile.ps1 dflat.cs
 rm compile.ps1
 rm dflat.cs
+Remove-Item -Recurse -Force -Confirm:$false .\libs\extras
 cd ..
 
 # pack
