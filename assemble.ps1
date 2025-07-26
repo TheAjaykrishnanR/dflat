@@ -33,9 +33,9 @@ mkdir -p build\libs\runtime
 # Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.pdb"
 
 # lld-link (llvm)
-curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
+# curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
 mkdir llvm
-"C:\Program Files\Git\usr\bin\tar.exe" -xvf llvm.tar.xz -C llvm
+& "C:\Program Files\Git\usr\bin\tar.exe" -xvf llvm.tar.xz -C llvm
 cp llvm\bin\lld-link.exe build\linker\lld-link.exe
 
 # compile dflat.cs
