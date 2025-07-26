@@ -19,6 +19,7 @@ class Dflat
 	public static string refs = Path.Join(home, @"libs\refs");
 	public static string runtime = Path.Join(home, @"libs\runtime");
 	public static string kits = Path.Join(home, @"libs\kits");
+	public static string msvc = Path.Join(home, @"libs\msvc");
 
 	static List<string> externalLibs = new();
 
@@ -243,8 +244,10 @@ class Dflat
 		argString += $" {Path.Join(kits, "oleaut32.lib")}";
 		argString += $" {Path.Join(kits, "secur32.lib")}";
 		argString += $" {Path.Join(kits, "user32.lib")}";
+		argString += $" {Path.Join(kits, "uuid.lib")}";
 		argString += $" {Path.Join(kits, "version.lib")}";
 		argString += $" {Path.Join(kits, "ws2_32.lib")}";
+		argString += $" -libpath:{msvc}";
 		Log(argString);
 		ProcessStartInfo psi = new()
 		{
