@@ -35,17 +35,18 @@ mkdir -p build\libs\runtime
 # lld-link (llvm)
 curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
 mkdir llvm
+which tar
 tar -xvf llvm.tar.xz
 cp llvm\bin\lld-link.exe build\linker\lld-link.exe
 
 # compile dflat.cs
-cp compile.ps1 build\compile.ps1
-cp dflat.cs build\dflat.cs
-cd build
-compile.ps1 dflat.cs
-rm compile.ps1
-rm dflat.cs
-cd ..
-
-# package
-tar -czvf dflat.tar.gz .\build
+# cp compile.ps1 build\compile.ps1
+# cp dflat.cs build\dflat.cs
+# cd build
+# compile.ps1 dflat.cs
+# rm compile.ps1
+# rm dflat.cs
+# cd ..
+# 
+# # package
+# tar -czvf dflat.tar.gz .\build
