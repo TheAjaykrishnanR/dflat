@@ -18,6 +18,7 @@ class Dflat
 	public static string aotsdk = Path.Join(home, @"libs\aotsdk");
 	public static string refs = Path.Join(home, @"libs\refs");
 	public static string runtime = Path.Join(home, @"libs\runtime");
+	public static string kits = Path.Join(home, @"libs\kits");
 
 	static List<string> externalLibs = new();
 
@@ -32,6 +33,7 @@ class Dflat
 		if (!Directory.Exists(aotsdk)) throw new Exception($"{aotsdk} not found");
 		if (!Directory.Exists(refs)) throw new Exception($"{refs} not found");
 		if (!Directory.Exists(runtime)) throw new Exception($"{runtime} not found");
+		if (!Directory.Exists(kits)) throw new Exception($"{kits} not found");
 
 		Argument<FileInfo> sourceFileArg = new("SOURCE") { Description = ".cs file to compile", };
 		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
@@ -229,12 +231,12 @@ class Dflat
 		argString += $" {Path.Join(aotsdk, "System.Globalization.Native.Aot.lib")}";
 		argString += $" {Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}";
 		argString += $" {Path.Join(aotsdk, "zlibstatic.lib")}";
-		argString += $" advapi32.lib";
-		argString += $" ole32.lib";
-		argString += $" bcrypt.lib";
-		argString += $" user32.lib";
-		argString += $" kernel32.lib";
-		argString += $" version.lib";
+		argString += $" {Path.Join(kits, "advapi32.lib")}";
+		argString += $" {Path.Join(kits, "ole32.lib")}";
+		argString += $" {Path.Join(kits, "bcrypt.lib")}";
+		argString += $" {Path.Join(kits, "user32.lib")}";
+		argString += $" {Path.Join(kits, "kernel32.lib")}";
+		argString += $" {Path.Join(kits, "version.lib")}";
 		Log(argString);
 		ProcessStartInfo psi = new()
 		{

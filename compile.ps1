@@ -56,27 +56,28 @@ $obj = "$program.obj"
 	--directpinvoke:System.Globalization.Native `
 	--directpinvoke:System.IO.Compression.Native 
 
+$kits = "libs\kits"
 .\linker\lld-link $obj `
-	"${aotsdk}\bootstrapper.obj" `
-	"${aotsdk}\dllmain.obj" `
-	"${aotsdk}\Runtime.ServerGC.lib" `
-	"${aotsdk}\standalonegc-disabled.lib" `
-	"${aotsdk}\aotminipal.lib" `
-	"${aotsdk}\brotlicommon.lib" `
-	"${aotsdk}\eventpipe-enabled.lib" `
-	"${aotsdk}\Runtime.WorkstationGC.lib" `
-	"${aotsdk}\brotlidec.lib" `
-	"${aotsdk}\brotlienc.lib" `
-	"${aotsdk}\Runtime.VxsortEnabled.lib" `
-	"${aotsdk}\System.Globalization.Native.Aot.lib" `
-	"${aotsdk}\System.IO.Compression.Native.Aot.lib" `
-	"${aotsdk}\zlibstatic.lib" `
-	advapi32.lib `
-	ole32.lib `
-	bcrypt.lib `
-	user32.lib `
-	kernel32.lib `
-	version.lib `
+	"$aotsdk\bootstrapper.obj" `
+	"$aotsdk\dllmain.obj" `
+	"$aotsdk\Runtime.ServerGC.lib" `
+	"$aotsdk\standalonegc-disabled.lib" `
+	"$aotsdk\aotminipal.lib" `
+	"$aotsdk\brotlicommon.lib" `
+	"$aotsdk\eventpipe-enabled.lib" `
+	"$aotsdk\Runtime.WorkstationGC.lib" `
+	"$aotsdk\brotlidec.lib" `
+	"$aotsdk\brotlienc.lib" `
+	"$aotsdk\Runtime.VxsortEnabled.lib" `
+	"$aotsdk\System.Globalization.Native.Aot.lib" `
+	"$aotsdk\System.IO.Compression.Native.Aot.lib" `
+	"$aotsdk\zlibstatic.lib" `
+	"$kits\advapi32.lib" `
+	"$kits\ole32.lib" `
+	"$kits\bcrypt.lib" `
+	"$kits\user32.lib" `
+	"$kits\kernel32.lib" `
+	"$kits\version.lib" `
 	/subsystem:console `
 	"/out:$program.exe" `
 
