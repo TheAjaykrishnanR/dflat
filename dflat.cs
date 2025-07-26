@@ -35,7 +35,6 @@ class Dflat
 		if (!Directory.Exists(refs)) throw new Exception($"{refs} not found");
 		if (!Directory.Exists(runtime)) throw new Exception($"{runtime} not found");
 		if (!Directory.Exists(kits)) throw new Exception($"{kits} not found");
-		if (!Directory.Exists(msvc)) throw new Exception($"{msvc} not found");
 
 		Argument<FileInfo> sourceFileArg = new("SOURCE") { Description = ".cs file to compile", };
 		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
@@ -114,7 +113,8 @@ class Dflat
 	static string ilexe;
 	static string obj;
 	static string exe;
-
+	
+	static Stopwatch sw = new();
 	static void Compile(FileInfo sourceFile, string? exeOut, List<string> cscExtraArgs, List<string> ilcExtraArgs)
 	{
 		// set paths
@@ -123,17 +123,22 @@ class Dflat
 		ilexe = Path.Join(tmpDir, $"{program}.il.exe");
 		obj = Path.Join(tmpDir, $"{program}.obj");
 		exe = Path.Join(cwd, $"{program}.exe");
-
+		
+		sw.Start();
 		if (!HandleError(CscCompile(sourceFile, cscExtraArgs))) return;
 		if (!HandleError(ILCompile(ilcExtraArgs))) return;
 		if (!HandleError(Link())) return;
-
+		sw.Stop();
+		Console.WriteLine($"Compilation finished in {(double)sw.ElapsedMilliseconds/1000}s, output written to {program}.exe");
 		Directory.Delete(tmpDir, recursive: true);
 	}
 
 	static bool HandleError(bool result)
 	{
-		if (!result) Directory.Delete(tmpDir, recursive: true);
+		if (!result) { 
+			Directory.Delete(tmpDir, recursive: true);
+			Console.Error.WriteLine("Compilation failed");
+		}
 		return result;
 	}
 
