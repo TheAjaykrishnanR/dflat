@@ -15,7 +15,4 @@ jobs:
     - name: Run assemble script
       run: .\.github\test.ps1
       shell: pwsh
-    - uses: ncipollo/release-action@v1
-      with:
-        artifacts: d:/a/dflat/dflat/dflat-win-x64.zip
-        tag: "dflat"
+
