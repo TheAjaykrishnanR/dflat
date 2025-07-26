@@ -36,6 +36,7 @@ mkdir -p build\libs\runtime
 curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
 mkdir llvm
 tar -xvf llvm.tar.xz -C llvm
+7z x llvm.tar.xz -so | 7z x -aoa -si -ttar -o"llvm"
 cp llvm\bin\lld-link.exe build\linker\lld-link.exe
 
 # compile dflat.cs
