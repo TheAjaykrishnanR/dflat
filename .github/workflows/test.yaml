@@ -1,0 +1,21 @@
+name: Test [tmate]
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    name: Run Script
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true
+        detached: true
+    - name: Run assemble script
+      run: .\.github\test.ps1
+      shell: pwsh
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: d:/a/dflat/dflat/dflat-win-x64.zip
+        tag: "dflat"

@@ -30,6 +30,9 @@ Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.xml"
 Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.pdb"
 Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.xml"
 Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.pdb"
+Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*.pdb"
+Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*unix*"
+Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*universal*"
 
 # lld-link (llvm)
 curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
