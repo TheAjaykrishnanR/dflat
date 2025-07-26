@@ -16,3 +16,7 @@ jobs:
     - name: Run assemble script
       run: .\assemble.ps1
       shell: pwsh
+    - uses: actions/upload-artifact@v4
+      with:
+        name: build-artifact
+        path: d:/a/dflat/dflat/dflat-win-x64.zip
