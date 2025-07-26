@@ -1,6 +1,7 @@
 mkdir -p build\csc
 mkdir -p build\ilc
 mkdir -p build\linker
+mkdir -p build\libs\aotsdk
 mkdir -p build\libs\refs
 mkdir -p build\libs\runtime
 
@@ -14,15 +15,22 @@ mkdir -p build\libs\runtime
 # cp roslyn\artifacts\bin\csc\Release\net9.0\win-x64\publish\csc.exe build\csc\csc.exe
 
 # build ilc, runtime, libs (dotnet\runtime)
-git clone --depth 1 -b main https://github.com/dotnet/runtime
-runtime\build.cmd clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -rc Release -lc Release
-
-$coreclr = runtime\artifacts\bin\coreclr\windows.x64.Release\
-cp "$coreclr\aotsdk" build\libs\
-cp "$coreclr\x64\ilc\*" build\ilc\
-cp runtime\artifacts\bin\microsoft.netcore.app.ref\net10.0\* build\libs\refs
-cp runtime\artifacts\bin\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net10.0 build\libs\runtime
-cp dotnet\runtime\src\coreclr\nativeaot\BuildIntegration\WindowsAPIs.txt build\libs\WindowsAPIs.txt
+# git clone --depth 1 -b main https://github.com/dotnet/runtime
+# runtime\build.cmd clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -rc Release -lc Release
+# 
+# $coreclr = "runtime\artifacts\bin\coreclr\windows.x64.Release\"
+# cp "$coreclr\aotsdk\*" build\libs\aotsdk\
+# cp "$coreclr\x64\ilc\*" build\ilc\
+# cp runtime\artifacts\bin\microsoft.netcore.app.ref\ref\net10.0\* build\libs\refs
+# cp runtime\artifacts\bin\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net10.0\* build\libs\runtime
+# cp runtime\src\coreclr\nativeaot\BuildIntegration\WindowsAPIs.txt build\libs\WindowsAPIs.txt
+# 
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.xml"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.pdb"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.xml"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.pdb"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.xml"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.pdb"
 
 # lld-link (llvm)
 curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
@@ -39,4 +47,4 @@ rm dflat.cs
 cd ..
 
 # package
-tar -czvf dflat.tar.gz build
+tar -czvf dflat.tar.gz .\build
