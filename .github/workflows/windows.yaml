@@ -7,9 +7,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: lhotari/action-upterm@v1
-        with:
-          limit-access-to-actor: true 
       - name: Assemble Script
         run: .\assemble.ps1
         shell: pwsh
