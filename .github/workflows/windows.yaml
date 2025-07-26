@@ -1,4 +1,4 @@
-name: Windows PowerShell
+name: Build dflat
 on: [workflow_dispatch]
 
 jobs:
@@ -18,4 +18,4 @@ jobs:
     - uses: ncipollo/release-action@v1
       with:
         artifacts: d:/a/dflat/dflat/dflat-win-x64.zip
-        tag: "v1"
+        tag: "dflat"
