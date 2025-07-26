@@ -6,7 +6,7 @@ mkdir -p build\linker
 
 git clone --depth 1 -b main https://github.com/dotnet/roslyn 
 rm roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
-cp csc.csproj roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
+cp .github\diffs\csc.csproj roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 roslyn\restore.cmd
 dotnet publish roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj 
 
