@@ -173,7 +173,7 @@ class Dflat
 		if (!result)
 		{
 			sw.Stop();
-			if (File.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
+			if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
 			Console.Error.WriteLine($"{RED}Compilation failed{NORMAL}");
 		}
 		return result;
@@ -183,7 +183,7 @@ class Dflat
 	{
 		sw.Stop();
 		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}.exe{NORMAL}");
-		if (File.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
+		if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
 	}
 
 	static bool verbose = false;
