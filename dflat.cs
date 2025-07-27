@@ -53,7 +53,7 @@ class Dflat
 		Option<CSCTargets> targetsOption = new("/target") { Description = "Specify the target", };
 		Option<CSCPlatforms> platformOption = new("/platform") { Description = "Specify the platform", };
 		Option<bool> optimizeFlag = new("/optimize") { Description = "optimize", };
-		RootCommand cmd = new("dflat, a native aot compiler for c#") {
+		RootCommand cmd = new("dflat, a native aot compiler for c#\nAjaykrishnan R, 2025") {
 			sourceFilesArg,
 			outputArg,
 			entryPoint,
@@ -83,7 +83,6 @@ class Dflat
 				cmd.Options[i] = ho;
 			}
 		}
-
 
 		cmd.SetAction(result =>
 		{
@@ -130,6 +129,7 @@ class Dflat
 			if (result.GetValue(platformOption) != null) cscExtraArgs.Add($"/platform:{result.GetValue(platformOption).ToString()}");
 			if (result.GetValue(optimizeFlag)) { cscExtraArgs.Add("/O"); ilcExtraArgs.Add("--optimize"); }
 			if (result.GetValue(entryPoint) != null) { cscExtraArgs.Add($"/main:{result.GetValue(entryPoint)}"); }
+			if (result.GetValue(justILFlag)) { justIL = true; }
 			Compile(sourceFiles, result.GetValue(outputArg), cscExtraArgs, ilcExtraArgs);
 		});
 
@@ -143,32 +143,47 @@ class Dflat
 	static string exe;
 
 	static Stopwatch sw = new();
+	static bool justIL = false;
 	static void Compile(List<FileInfo> sourceFiles, string? exeOut, List<string> cscExtraArgs, List<string> ilcExtraArgs)
 	{
 		// set paths
-		Directory.CreateDirectory(tmpDir);
 		program = exeOut == null ? sourceFiles.First().Name.Replace(".cs", "") : exeOut.Replace(".exe", "");
-		ilexe = Path.Join(tmpDir, $"{program}.il.exe");
-		obj = Path.Join(tmpDir, $"{program}.obj");
-		exe = Path.Join(cwd, $"{program}.exe");
+		if (!justIL)
+		{
+			Directory.CreateDirectory(tmpDir);
+			ilexe = Path.Join(tmpDir, $"{program}.il.exe");
+			obj = Path.Join(tmpDir, $"{program}.obj");
+			exe = Path.Join(cwd, $"{program}.exe");
+		}
+		else
+		{
+			ilexe = Path.Join(cwd, $"{program}.il.exe");
+		}
 
 		sw.Start();
 		if (!HandleError(CscCompile(sourceFiles, cscExtraArgs))) return;
+		if (justIL) { Finish(); return; }
 		if (!HandleError(ILCompile(ilcExtraArgs))) return;
 		if (!HandleError(Link())) return;
-		sw.Stop();
-		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}.exe{NORMAL}");
-		Directory.Delete(tmpDir, recursive: true);
+		Finish();
 	}
 
 	static bool HandleError(bool result)
 	{
 		if (!result)
 		{
-			Directory.Delete(tmpDir, recursive: true);
+			sw.Stop();
+			if (File.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
 			Console.Error.WriteLine($"{RED}Compilation failed{NORMAL}");
 		}
 		return result;
+	}
+
+	static void Finish()
+	{
+		sw.Stop();
+		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}.exe{NORMAL}");
+		if (File.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
 	}
 
 	static bool verbose = false;
