@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 
 #nullable enable
@@ -23,6 +24,10 @@ class Dflat
 
 	static List<string> externalLibs = new();
 
+	static string NORMAL = "\x1b[39m";
+	static string RED = "\x1b[91m";
+	static string GREEN = "\x1b[92m";
+
 	static void Main(string[] args)
 	{
 		// check compilers
@@ -37,12 +42,12 @@ class Dflat
 		if (!Directory.Exists(kits)) throw new Exception($"{kits} not found");
 		if (!Directory.Exists(msvc)) throw new Exception($"{msvc} not found");
 
-		Argument<List<FileInfo>> sourceFilesArg = new("SOURCE") { Description = ".cs file to compile", };
+		Argument<List<FileInfo>> sourceFilesArg = new("SOURCE FILES") { Description = ".cs files to compile", };
 		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
 		Option<string[]> externalLibsOption = new("/r") { Description = "Additional reference .dlls or folders containing them", };
 		Option<bool> verbosity = new("/verbosity") { Description = "Set verbosity", };
 		Option<string> outputArg = new("/out") { Description = "Output file name", };
-		Option<string> entryPoint = new("/entrytype") { Description = "Specify the class containing Main()", };
+		Option<string> entryPoint = new("/main") { Description = "Specify the class containing Main()", };
 		Option<bool> langversion = new("/langversion") { Description = "Print supported lang versions", };
 		langversion.Action = new LangversionAction();
 		Option<CSCTargets> targetsOption = new("/target") { Description = "Specify the target", };
@@ -61,6 +66,7 @@ class Dflat
 			optimizeFlag,
 		};
 		// override defaults
+		HelpAction defaultHelpAction = null;
 		for (int i = 0; i < cmd.Options.Count; i++)
 		{
 			if (cmd.Options[i].GetType() == typeof(VersionOption))
@@ -69,10 +75,25 @@ class Dflat
 				vo.Action = new CustomVersionAction();
 				cmd.Options[i] = vo;
 			}
+			if (cmd.Options[i].GetType() == typeof(HelpOption))
+			{
+				defaultHelpAction = (HelpAction)cmd.Options[i].Action;
+				HelpOption ho = new("/h", ["/?", "/help"]);
+				ho.Action = defaultHelpAction;
+				cmd.Options[i] = ho;
+			}
 		}
+
+
 		cmd.SetAction(result =>
 		{
 			List<FileInfo> sourceFiles = result.GetValue(sourceFilesArg);
+			if (sourceFiles.Count == 0)
+			{
+				Console.WriteLine($"{RED}No source files supplied{NORMAL}");
+				defaultHelpAction.Invoke(result);
+				return;
+			}
 			foreach (FileInfo sourceFile in sourceFiles)
 			{
 				if (!sourceFile.Exists)
@@ -136,7 +157,7 @@ class Dflat
 		if (!HandleError(ILCompile(ilcExtraArgs))) return;
 		if (!HandleError(Link())) return;
 		sw.Stop();
-		Console.WriteLine($"Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}.exe");
+		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}.exe{NORMAL}");
 		Directory.Delete(tmpDir, recursive: true);
 	}
 
@@ -145,7 +166,7 @@ class Dflat
 		if (!result)
 		{
 			Directory.Delete(tmpDir, recursive: true);
-			Console.Error.WriteLine("Compilation failed");
+			Console.Error.WriteLine($"{RED}Compilation failed{NORMAL}");
 		}
 		return result;
 	}
