@@ -173,7 +173,7 @@ class Dflat
 			def = Path.Join(tmpDir, $"{program}.def");
 			cscExtraArgs.Add($"/target:library");
 			ilcExtraArgs.AddRange(["--nativelib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
-			linkerExraArgs.AddRange(["/dll", $"/def:{def}"]);
+			linkerExraArgs.AddRange(["/dll", $"/def:{def}", "/noimplib"]);
 		}
 
 		sw.Start();

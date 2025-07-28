@@ -87,7 +87,7 @@ $kits = "libs\kits"
 	"/out:$program.dll" `
 
 # cleanup
-rm "$program.il.exe"
-rm "$program.lib"
-rm "$program.obj"
+# rm "$program.il.exe"
+# rm "$program.lib"
+# rm "$program.obj"
 
