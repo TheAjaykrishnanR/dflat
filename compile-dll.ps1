@@ -1,5 +1,5 @@
 # cleanup
-rm *exe
+rm *.dll
 rm *.obj
 
 $csFile = $args[0]
@@ -39,6 +39,7 @@ $obj = "$program.obj"
 	--generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN `
 	--nativelib `
 	--export-unmanaged-entrypoints `
+	--exportsfile:"$program.def" `
 	--dehydrate `
 	--initassembly:System.Private.CoreLib `
 	--initassembly:System.Private.StackTraceMetadata `
@@ -80,11 +81,13 @@ $kits = "libs\kits"
 	"$kits\user32.lib" `
 	"$kits\kernel32.lib" `
 	"$kits\version.lib" `
+	"/def:$program.def" `
 	/subsystem:console `
 	/dll `
 	"/out:$program.dll" `
 
 # cleanup
 rm "$program.il.exe"
+rm "$program.lib"
 rm "$program.obj"
 

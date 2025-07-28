@@ -23,6 +23,7 @@ class Dflat
 	public static string msvc = Path.Join(home, @"libs\msvc");
 
 	static List<string> externalLibs = new();
+	static List<string> cscExtraArgs = new(), ilcExtraArgs = new(), linkerExraArgs = new();
 
 	static string NORMAL = "\x1b[39m";
 	static string RED = "\x1b[91m";
@@ -124,8 +125,7 @@ class Dflat
 				}
 				externalLibs.Add(new FileInfo(path).FullName);
 			}
-			List<string> cscExtraArgs = new(), ilcExtraArgs = new();
-			if (result.GetValue(targetsOption) != null) cscExtraArgs.Add($"/target:{result.GetValue(targetsOption).ToString()}");
+			outputType = result.GetValue(targetsOption);
 			if (result.GetValue(platformOption) != null) cscExtraArgs.Add($"/platform:{result.GetValue(platformOption).ToString()}");
 			if (result.GetValue(optimizeFlag)) { cscExtraArgs.Add("/O"); ilcExtraArgs.Add("--optimize"); }
 			if (result.GetValue(entryPoint) != null) { cscExtraArgs.Add($"/main:{result.GetValue(entryPoint)}"); }
@@ -142,8 +142,12 @@ class Dflat
 	static string obj;
 	static string exe;
 
+	// export definitions created by ILC for linker
+	static string def;
+
 	static Stopwatch sw = new();
 	static bool justIL = false;
+	static CSCTargets outputType = CSCTargets.EXE;
 	static void Compile(List<FileInfo> sourceFiles, string? exeOut, List<string> cscExtraArgs, List<string> ilcExtraArgs)
 	{
 		// set paths
@@ -153,18 +157,30 @@ class Dflat
 			Directory.CreateDirectory(tmpDir);
 			ilexe = Path.Join(tmpDir, $"{program}.il.exe");
 			obj = Path.Join(tmpDir, $"{program}.obj");
-			exe = Path.Join(cwd, $"{program}.exe");
+			exe = outputType switch
+			{
+				CSCTargets.EXE => Path.Join(cwd, $"{program}.exe"),
+				CSCTargets.LIBRARY => Path.Join(cwd, $"{program}.dll"),
+			};
 		}
 		else
 		{
 			ilexe = Path.Join(cwd, $"{program}.il.exe");
 		}
 
+		if (outputType == CSCTargets.LIBRARY)
+		{
+			def = Path.Join(tmpDir, $"{program}.def");
+			cscExtraArgs.Add($"/target:library");
+			ilcExtraArgs.AddRange(["--nativelib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
+			linkerExraArgs.AddRange(["/dll", $"/def:{def}"]);
+		}
+
 		sw.Start();
 		if (!HandleError(CscCompile(sourceFiles, cscExtraArgs))) return;
 		if (justIL) { Finish(); return; }
 		if (!HandleError(ILCompile(ilcExtraArgs))) return;
-		if (!HandleError(Link())) return;
+		if (!HandleError(Link(linkerExraArgs))) return;
 		Finish();
 	}
 
@@ -239,10 +255,6 @@ class Dflat
 		string argString = $"{ilexe} --out:{obj}";
 		argString += $" -r:{Path.Join(aotsdk, "*.dll")}";
 		argString += $" -r:{Path.Join(runtime, "*.dll")}";
-		foreach (string dll in externalLibs)
-		{
-			argString += $" -r:{dll}";
-		}
 		argString += $" -g";
 		argString += $" --generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN";
 		argString += $" --dehydrate";
@@ -263,16 +275,28 @@ class Dflat
 		argString += $" --directpinvokelist:{Path.Join(home, @"libs\WindowsAPIs.txt")}";
 		argString += $" --directpinvoke:System.Globalization.Native";
 		argString += $" --directpinvoke:System.IO.Compression.Native";
+		foreach (string dll in externalLibs)
+		{
+			argString += $" -r:{dll}";
+		}
+		foreach (string arg in args)
+		{
+			argString += $" {arg}";
+		}
 		Log(argString);
 		CallCompiler(ilc, argString);
 		return File.Exists(obj);
 	}
 
-	static bool Link()
+	static bool Link(List<string> args)
 	{
 		Log("Linking...");
 		string argString = $"{obj} /out:{exe} /subsystem:console";
-		argString += $" {Path.Join(aotsdk, "bootstrapper.obj")}";
+		argString += outputType switch
+		{
+			CSCTargets.EXE => $" {Path.Join(aotsdk, "bootstrapper.obj")}",
+			CSCTargets.LIBRARY => $" {Path.Join(aotsdk, "bootstrapperdll.obj")}",
+		};
 		argString += $" {Path.Join(aotsdk, "dllmain.obj")}";
 		argString += $" {Path.Join(aotsdk, "Runtime.ServerGC.lib")}";
 		argString += $" {Path.Join(aotsdk, "standalonegc-disabled.lib")}";
@@ -307,6 +331,10 @@ class Dflat
 		argString += $" {Path.Join(msvc, "libvcruntime.lib")}";
 		argString += $" {Path.Join(msvc, "oldnames.lib")}";
 		argString += $" -libpath:{msvc}";
+		foreach (string arg in args)
+		{
+			argString += $" {arg}";
+		}
 		Log(argString);
 		ProcessStartInfo psi = new()
 		{
