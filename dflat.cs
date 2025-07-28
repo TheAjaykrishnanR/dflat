@@ -175,6 +175,7 @@ class Dflat
 			ilcExtraArgs.AddRange(["--nativelib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
 			linkerExraArgs.AddRange(["/dll", $"/def:{def}", "/noimplib"]);
 		}
+		else if (outputType == CSCTargets.WINEXE) { cscExtraArgs.Add($"/target:winexe"); }
 
 		sw.Start();
 		if (!HandleError(CscCompile(sourceFiles, cscExtraArgs))) return;
@@ -377,9 +378,7 @@ enum CSCTargets
 {
 	EXE,
 	WINEXE,
-	MODULE,
 	LIBRARY,
-	APPCONTAINEREXE
 }
 
 enum CSCPlatforms
