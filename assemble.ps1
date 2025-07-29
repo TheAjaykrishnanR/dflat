@@ -53,6 +53,7 @@ foreach($name in $kitlibs) {
 foreach($name in $msvclibs) {
 	& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\VC\Tools\MSVC\14.44.35207\lib\x64\$name.lib" build\libs\msvc\$name.lib
 }
+& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64\ucrt.lib" build\libs\kits\ucrt.lib
 
 # compile dflat.cs
 curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
