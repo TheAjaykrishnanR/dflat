@@ -335,15 +335,20 @@ class Dflat
 		argString += $" /nodefaultlib:oldnames.lib";
 		argString += $" /nodefaultlib:libucrt.lib";
 		argString += $" /nodefaultlib:libvcruntime.lib";
-
+		
+		///<summary>
+		///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
+		///</summary>
+		// C Runtime containing native CRT startup
 		argString += $" {Path.Join(msvc, "libcmt.lib")}";
-		argString += $" {Path.Join(msvc, "libcpmt.lib")}";
+		// C++ multithreaded runtime
+		argString += $" {Path.Join(msvc, "msvcprt.lib")}";
+
 		argString += $" {Path.Join(msvc, "vcruntime.lib")}";
 		argString += $" {Path.Join(msvc, "oldnames.lib")}";
 
 		// use ucrt instead of statically linking libucrt
 		argString += $" {Path.Join(kits, "ucrt.lib")}";
-		argString += $" /defaultlib:ucrt.lib";
 
 		foreach (string arg in args)
 		{

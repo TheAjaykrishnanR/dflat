@@ -44,7 +44,7 @@ cp llvm\*\bin\lld-link.exe build\linker\lld-link.exe
 
 # kits (Windows SDK)
 $kitlibs = @("advapi32", "bcrypt", "crypt32", "d3d11", "dxgi", "gdi32", "iphlpapi", "kernel32", "mswsock", "ncrypt", "ntdll", "ole32", "oleaut32", "secur32", "user32", "uuid", "version", "ws2_32")
-$msvclibs = @("libcmt", "libcpmt", "vcruntime", "oldnames")
+$msvclibs = @("libcmt", "msvcprt", "vcruntime", "oldnames")
 curl -Lo ms-downloader.py https://gist.github.com/TheAjaykrishnanR/1ed9254e7bf20bfbabb667124e331d21/raw/b3f026554d2a646a28c0a74dd24dbd4a6f15eb2f/portable-msvc.py 
 python ms-downloader.py --sdk-version 26100
 foreach($name in $kitlibs) {
