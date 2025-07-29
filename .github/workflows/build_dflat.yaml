@@ -13,4 +13,4 @@ jobs:
     - uses: ncipollo/release-action@v1
       with:
         artifacts: d:/a/dflat/dflat/dflat-win-x64.zip
-        tag: "dflat"
+        tag: "dflat-${{ github.run_number }}-${{ github.run_attempt }}"
