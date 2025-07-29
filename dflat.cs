@@ -334,10 +334,11 @@ class Dflat
 		argString += $" /nodefaultlib:libcpmt.lib";
 		argString += $" /nodefaultlib:oldnames.lib";
 		argString += $" /nodefaultlib:libucrt.lib";
+		argString += $" /nodefaultlib:libvcruntime.lib";
 
 		argString += $" {Path.Join(msvc, "libcmt.lib")}";
 		argString += $" {Path.Join(msvc, "libcpmt.lib")}";
-		argString += $" {Path.Join(msvc, "libvcruntime.lib")}";
+		argString += $" {Path.Join(msvc, "vcruntime.lib")}";
 		argString += $" {Path.Join(msvc, "oldnames.lib")}";
 
 		// use ucrt instead of statically linking libucrt
