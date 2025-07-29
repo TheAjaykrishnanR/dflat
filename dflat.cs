@@ -263,8 +263,12 @@ class Dflat
 		argString += $" --initassembly:System.Private.StackTraceMetadata";
 		argString += $" --initassembly:System.Private.TypeLoader";
 		argString += $" --initassembly:System.Private.Reflection.Execution";
+		argString += $" --directpinvokelist:{Path.Join(home, @"libs\WindowsAPIs.txt")}";
+		argString += $" --directpinvoke:System.Globalization.Native";
+		argString += $" --directpinvoke:System.IO.Compression.Native";
 		argString += $" --stacktracedata";
 		argString += $" --scanreflection";
+		//
 		argString += $" --feature:System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization=false";
 		argString += $" --feature:System.Diagnostics.Tracing.EventSource.IsSupported=false";
 		argString += $" --feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false";
@@ -273,9 +277,7 @@ class Dflat
 		argString += $" --feature:System.Globalization.Invariant=true";
 		argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
 		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
-		argString += $" --directpinvokelist:{Path.Join(home, @"libs\WindowsAPIs.txt")}";
-		argString += $" --directpinvoke:System.Globalization.Native";
-		argString += $" --directpinvoke:System.IO.Compression.Native";
+		
 		foreach (string dll in externalLibs)
 		{
 			argString += $" -r:{dll}";
@@ -326,12 +328,22 @@ class Dflat
 		argString += $" {Path.Join(kits, "uuid.lib")}";
 		argString += $" {Path.Join(kits, "version.lib")}";
 		argString += $" {Path.Join(kits, "ws2_32.lib")}";
-		argString += $" {Path.Join(kits, "libucrt.lib")}";
+
+		// Remove defaults so that we control exactly what gets added
+		argString += $" /nodefaultlib:libcmt.lib";
+		argString += $" /nodefaultlib:libcpmt.lib";
+		argString += $" /nodefaultlib:oldnames.lib";
+		argString += $" /nodefaultlib:libucrt.lib";
+
 		argString += $" {Path.Join(msvc, "libcmt.lib")}";
 		argString += $" {Path.Join(msvc, "libcpmt.lib")}";
 		argString += $" {Path.Join(msvc, "libvcruntime.lib")}";
 		argString += $" {Path.Join(msvc, "oldnames.lib")}";
-		argString += $" -libpath:{msvc}";
+
+		// use ucrt instead of statically linking libucrt
+		argString += $" {Path.Join(kits, "ucrt.lib")}";
+		argString += $" /defaultlib:ucrt.lib";
+
 		foreach (string arg in args)
 		{
 			argString += $" {arg}";
