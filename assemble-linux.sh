@@ -1,12 +1,12 @@
-mkdir -p build\csc
-mkdir -p build\ilc
-mkdir -p build\linker
-mkdir -p build\libs\aotsdk
-mkdir -p build\libs\refs
-mkdir -p build\libs\runtime
-mkdir -p build\libs\extras
-mkdir -p build\libs\kits
-mkdir -p build\libs\msvc
+mkdir -p build/csc
+mkdir -p build/ilc
+mkdir -p build/linker
+mkdir -p build/libs/aotsdk
+mkdir -p build/libs/refs
+mkdir -p build/libs/runtime
+mkdir -p build/libs/extras
+mkdir -p build/libs/kits
+mkdir -p build/libs/msvc
 
 # build csc (dotnet\roslyn)
 # git clone --depth 1 -b main https://github.com/dotnet/roslyn 
@@ -18,12 +18,12 @@ mkdir -p build\libs\msvc
 
 # build ilc, runtime, libs (dotnet\runtime)
 git clone --depth 1 -b main https://github.com/dotnet/runtime
-runtime\build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
-coreclr="runtime\artifacts\bin\coreclr\linux.x64.Release\"
-cp "$coreclr\aotsdk\*" build\libs\aotsdk\
-cp "$coreclr\x64\ilc\*" build\ilc\
-cp runtime\artifacts\bin\microsoft.netcore.app.ref\ref\net*\* build\libs\refs
-cp runtime\artifacts\bin\microsoft.netcore.app.runtime.linux-x64\Release\runtimes\linux-x64\lib\net*\* build\libs\runtime
+./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
+coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release/"
+cp "$coreclr/aotsdk/*" build/libs/aotsdk/
+cp "$coreclr/x64/ilc/*" build/ilc/
+cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
+cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
 
 # Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.xml"
 # Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.pdb"
