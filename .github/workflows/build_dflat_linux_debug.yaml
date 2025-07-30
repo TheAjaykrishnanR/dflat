@@ -4,7 +4,7 @@ on: [workflow_dispatch]
 jobs:
   build:
     name: Run Script
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup tmate session
@@ -13,9 +13,9 @@ jobs:
         limit-access-to-actor: true
         detached: true
     - name: Run assemble script
-      run: .\assemble-linux.ps1
-      shell: pwsh
+      run: .\assemble-linux.sh
+      shell: bash
     - uses: ncipollo/release-action@v1
       with:
         artifacts: d:/a/dflat/dflat/dflat-linux-x64.zip
-        tag: "dflat-${{ github.run_number }}-${{ github.run_attempt }}"
+        tag: "test-${{ github.run_number }}-${{ github.run_attempt }}"

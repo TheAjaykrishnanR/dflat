@@ -18,22 +18,22 @@ mkdir -p build\libs\msvc
 
 # build ilc, runtime, libs (dotnet\runtime)
 git clone --depth 1 -b main https://github.com/dotnet/runtime
-runtime\build.cmd clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
-$coreclr = "runtime\artifacts\bin\coreclr\linux.x64.Release\"
+runtime\build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
+coreclr="runtime\artifacts\bin\coreclr\linux.x64.Release\"
 cp "$coreclr\aotsdk\*" build\libs\aotsdk\
 cp "$coreclr\x64\ilc\*" build\ilc\
 cp runtime\artifacts\bin\microsoft.netcore.app.ref\ref\net*\* build\libs\refs
 cp runtime\artifacts\bin\microsoft.netcore.app.runtime.linux-x64\Release\runtimes\linux-x64\lib\net*\* build\libs\runtime
 
-Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.xml"
-Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.pdb"
-Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.xml"
-Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.pdb"
-Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.xml"
-Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.pdb"
-Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*.pdb"
-Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*universal*"
-Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*win*"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.xml"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\aotsdk\*.pdb"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.xml"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\refs\*.pdb"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.xml"
+# Remove-Item -Recurse -Force -Confirm:$false "build\libs\runtime\*.pdb"
+# Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*.pdb"
+# Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*universal*"
+# Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*win*"
 
 # lld-link (llvm)
 # curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
@@ -69,4 +69,4 @@ Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*win*"
 # cd ..
 
 # pack
-Compress-Archive .\build\* dflat-linux-test-x64.zip
+# Compress-Archive .\build\* dflat-linux-test-x64.zip
