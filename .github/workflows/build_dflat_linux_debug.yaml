@@ -13,7 +13,7 @@ jobs:
         limit-access-to-actor: true
         detached: true
     - name: Run assemble script
-      run: .\assemble-linux.sh
+      run: assemble-linux.sh
       shell: bash
     - uses: ncipollo/release-action@v1
       with:
