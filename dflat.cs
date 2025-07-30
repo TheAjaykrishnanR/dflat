@@ -199,7 +199,7 @@ class Dflat
 	static void Finish()
 	{
 		sw.Stop();
-		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}.exe{NORMAL}");
+		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {exe}{NORMAL}");
 		if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
 	}
 
@@ -277,7 +277,7 @@ class Dflat
 		argString += $" --feature:System.Globalization.Invariant=true";
 		argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
 		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
-		
+
 		foreach (string dll in externalLibs)
 		{
 			argString += $" -r:{dll}";
@@ -294,7 +294,7 @@ class Dflat
 	static bool Link(List<string> args)
 	{
 		Log("Linking...");
-		string argString = $"{obj} /out:{exe} /subsystem:console";
+		string argString = $"{obj} /out:{exe} /nodefaultlib /subsystem:console";
 		argString += outputType switch
 		{
 			CSCTargets.EXE => $" {Path.Join(aotsdk, "bootstrapper.obj")}",
@@ -329,13 +329,6 @@ class Dflat
 		argString += $" {Path.Join(kits, "version.lib")}";
 		argString += $" {Path.Join(kits, "ws2_32.lib")}";
 
-		// Remove defaults so that we control exactly what gets added
-		argString += $" /nodefaultlib:libcmt.lib";
-		argString += $" /nodefaultlib:libcpmt.lib";
-		argString += $" /nodefaultlib:oldnames.lib";
-		argString += $" /nodefaultlib:libucrt.lib";
-		argString += $" /nodefaultlib:libvcruntime.lib";
-		
 		///<summary>
 		///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
 		///</summary>
@@ -343,10 +336,8 @@ class Dflat
 		argString += $" {Path.Join(msvc, "libcmt.lib")}";
 		// C++ multithreaded runtime
 		argString += $" {Path.Join(msvc, "msvcprt.lib")}";
-
 		argString += $" {Path.Join(msvc, "vcruntime.lib")}";
 		argString += $" {Path.Join(msvc, "oldnames.lib")}";
-
 		// use ucrt instead of statically linking libucrt
 		argString += $" {Path.Join(kits, "ucrt.lib")}";
 
@@ -355,17 +346,7 @@ class Dflat
 			argString += $" {arg}";
 		}
 		Log(argString);
-		ProcessStartInfo psi = new()
-		{
-			FileName = linker,
-			Arguments = argString,
-		};
-		Process process = new()
-		{
-			StartInfo = psi
-		};
-		process.Start();
-		process.WaitForExit();
+		CallCompiler(linker, argString);
 		return File.Exists(exe);
 	}
 }
