@@ -24,6 +24,7 @@ class Dflat
 
 	static List<string> externalLibs = new();
 	static List<string> cscExtraArgs = new(), ilcExtraArgs = new(), linkerExraArgs = new();
+	static string cscExtraArgString = "", ilcExtraArgString = "", lldExtraArgString = "";
 
 	static string NORMAL = "\x1b[39m";
 	static string RED = "\x1b[91m";
@@ -54,6 +55,9 @@ class Dflat
 		Option<CSCTargets> targetsOption = new("/target") { Description = "Specify the target", };
 		Option<CSCPlatforms> platformOption = new("/platform") { Description = "Specify the platform", };
 		Option<bool> optimizeFlag = new("/optimize") { Description = "optimize", };
+		Option<string> cscArgStringOption = new("/csc") { Description = "extra csc flags [as a single string]", };
+		Option<string> ilcArgStringOption = new("/ilc") { Description = "extra ilc flags [as a single string]", };
+		Option<string> lldArgStringOption = new("/lld") { Description = "extra lld flags [as a single string]", };
 		RootCommand cmd = new("dflat, a native aot compiler for c#\nAjaykrishnan R, 2025") {
 			sourceFilesArg,
 			outputArg,
@@ -65,6 +69,9 @@ class Dflat
 			targetsOption,
 			platformOption,
 			optimizeFlag,
+			cscArgStringOption,
+			ilcArgStringOption,
+			lldArgStringOption
 		};
 		// override defaults
 		HelpAction defaultHelpAction = null;
@@ -130,6 +137,9 @@ class Dflat
 			if (result.GetValue(optimizeFlag)) { cscExtraArgs.Add("/O"); ilcExtraArgs.Add("--optimize"); }
 			if (result.GetValue(entryPoint) != null) { cscExtraArgs.Add($"/main:{result.GetValue(entryPoint)}"); }
 			if (result.GetValue(justILFlag)) { justIL = true; }
+			if (result.GetValue(cscArgStringOption) != null) { cscExtraArgString = result.GetValue(cscArgStringOption); }
+			if (result.GetValue(ilcArgStringOption) != null) { ilcExtraArgString = result.GetValue(ilcArgStringOption); }
+			if (result.GetValue(lldArgStringOption) != null) { lldExtraArgString = result.GetValue(lldArgStringOption); }
 			Compile(sourceFiles, result.GetValue(outputArg), cscExtraArgs, ilcExtraArgs);
 		});
 
@@ -209,6 +219,21 @@ class Dflat
 		if (verbose) Console.WriteLine(text);
 	}
 
+	public static void CallCompiler(string compiler, string argString)
+	{
+		ProcessStartInfo psi = new()
+		{
+			FileName = compiler,
+			Arguments = argString,
+		};
+		Process process = new()
+		{
+			StartInfo = psi,
+		};
+		process.Start();
+		process.WaitForExit();
+	}
+
 	static bool CscCompile(List<FileInfo> sourceFiles, List<string> args)
 	{
 		Log("CSCCompile...");
@@ -229,26 +254,14 @@ class Dflat
 		{
 			argString += $" {arg}";
 		}
+		argString += $" {cscExtraArgString}";
 		Log(argString);
 		CallCompiler(csc, argString);
 		var exists = File.Exists(ilexe);
 		return exists;
 	}
 
-	public static void CallCompiler(string compiler, string argString)
-	{
-		ProcessStartInfo psi = new()
-		{
-			FileName = compiler,
-			Arguments = argString,
-		};
-		Process process = new()
-		{
-			StartInfo = psi,
-		};
-		process.Start();
-		process.WaitForExit();
-	}
+
 
 	static bool ILCompile(List<string> args)
 	{
@@ -286,6 +299,7 @@ class Dflat
 		{
 			argString += $" {arg}";
 		}
+		argString += $" {ilcExtraArgString}";
 		Log(argString);
 		CallCompiler(ilc, argString);
 		return File.Exists(obj);
@@ -345,6 +359,7 @@ class Dflat
 		{
 			argString += $" {arg}";
 		}
+		argString += $" {lldExtraArgString}";
 		Log(argString);
 		CallCompiler(linker, argString);
 		return File.Exists(exe);
