@@ -240,15 +240,15 @@ class Dflat
 		string argString = $"/noconfig /out:{ilexe} /nologo /nostdlib /nosdkpath /unsafe";
 		foreach (FileInfo sourceFile in sourceFiles)
 		{
-			argString += $" {sourceFile.FullName}";
+			argString += $" \"{sourceFile.FullName}\"";
 		}
 		foreach (string dll in Directory.GetFiles(refs).Where(file => file.EndsWith(".dll")))
 		{
-			argString += $" /r:{new FileInfo(dll).FullName}";
+			argString += $" /r:\"{new FileInfo(dll).FullName}\"";
 		}
 		foreach (string dll in externalLibs)
 		{
-			argString += $" /r:{dll}";
+			argString += $" /r:\"{dll}\"";
 		}
 		foreach (string arg in args)
 		{
@@ -267,8 +267,8 @@ class Dflat
 	{
 		Log("ILCompile...");
 		string argString = $"{ilexe} --out:{obj}";
-		argString += $" -r:{Path.Join(aotsdk, "*.dll")}";
-		argString += $" -r:{Path.Join(runtime, "*.dll")}";
+		argString += $" -r:\"{Path.Join(aotsdk, "*.dll")}\"";
+		argString += $" -r:\"{Path.Join(runtime, "*.dll")}\"";
 		argString += $" -g";
 		argString += $" --generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN";
 		argString += $" --dehydrate";
@@ -276,7 +276,7 @@ class Dflat
 		argString += $" --initassembly:System.Private.StackTraceMetadata";
 		argString += $" --initassembly:System.Private.TypeLoader";
 		argString += $" --initassembly:System.Private.Reflection.Execution";
-		argString += $" --directpinvokelist:{Path.Join(home, @"libs\WindowsAPIs.txt")}";
+		argString += $" --directpinvokelist:\"{Path.Join(home, @"libs\WindowsAPIs.txt")}\"";
 		argString += $" --directpinvoke:System.Globalization.Native";
 		argString += $" --directpinvoke:System.IO.Compression.Native";
 		argString += $" --stacktracedata";
@@ -293,7 +293,7 @@ class Dflat
 
 		foreach (string dll in externalLibs)
 		{
-			argString += $" -r:{dll}";
+			argString += $" -r:\"{dll}\"";
 		}
 		foreach (string arg in args)
 		{
@@ -311,49 +311,49 @@ class Dflat
 		string argString = $"{obj} /out:{exe} /nodefaultlib /subsystem:console";
 		argString += outputType switch
 		{
-			CSCTargets.EXE => $" {Path.Join(aotsdk, "bootstrapper.obj")}",
-			CSCTargets.LIBRARY => $" {Path.Join(aotsdk, "bootstrapperdll.obj")}",
+			CSCTargets.EXE => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
+			CSCTargets.LIBRARY => $" \"{Path.Join(aotsdk, "bootstrapperdll.obj")}\"",
 		};
-		argString += $" {Path.Join(aotsdk, "dllmain.obj")}";
-		argString += $" {Path.Join(aotsdk, "Runtime.ServerGC.lib")}";
-		argString += $" {Path.Join(aotsdk, "standalonegc-disabled.lib")}";
-		argString += $" {Path.Join(aotsdk, "aotminipal.lib")}";
-		argString += $" {Path.Join(aotsdk, "brotlicommon.lib")}";
-		argString += $" {Path.Join(aotsdk, "eventpipe-enabled.lib")}";
-		argString += $" {Path.Join(aotsdk, "Runtime.WorkstationGC.lib")}";
-		argString += $" {Path.Join(aotsdk, "brotlidec.lib")}";
-		argString += $" {Path.Join(aotsdk, "brotlienc.lib")}";
-		argString += $" {Path.Join(aotsdk, "Runtime.VxsortEnabled.lib")}";
-		argString += $" {Path.Join(aotsdk, "System.Globalization.Native.Aot.lib")}";
-		argString += $" {Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}";
-		argString += $" {Path.Join(aotsdk, "zlibstatic.lib")}";
-		argString += $" {Path.Join(kits, "advapi32.lib")}";
-		argString += $" {Path.Join(kits, "bcrypt.lib")}";
-		argString += $" {Path.Join(kits, "crypt32.lib")}";
-		argString += $" {Path.Join(kits, "iphlpapi.lib")}";
-		argString += $" {Path.Join(kits, "kernel32.lib")}";
-		argString += $" {Path.Join(kits, "mswsock.lib")}";
-		argString += $" {Path.Join(kits, "ncrypt.lib")}";
-		argString += $" {Path.Join(kits, "ntdll.lib")}";
-		argString += $" {Path.Join(kits, "ole32.lib")}";
-		argString += $" {Path.Join(kits, "oleaut32.lib")}";
-		argString += $" {Path.Join(kits, "secur32.lib")}";
-		argString += $" {Path.Join(kits, "user32.lib")}";
-		argString += $" {Path.Join(kits, "uuid.lib")}";
-		argString += $" {Path.Join(kits, "version.lib")}";
-		argString += $" {Path.Join(kits, "ws2_32.lib")}";
+		argString += $" \"{Path.Join(aotsdk, "dllmain.obj")}\"";
+		argString += $" \"{Path.Join(aotsdk, "Runtime.ServerGC.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "standalonegc-disabled.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "aotminipal.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "brotlicommon.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "eventpipe-enabled.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "Runtime.WorkstationGC.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "brotlidec.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "brotlienc.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "Runtime.VxsortEnabled.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "System.Globalization.Native.Aot.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}\"";
+		argString += $" \"{Path.Join(aotsdk, "zlibstatic.lib")}\"";
+		argString += $" \"{Path.Join(kits, "advapi32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "bcrypt.lib")}\"";
+		argString += $" \"{Path.Join(kits, "crypt32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "iphlpapi.lib")}\"";
+		argString += $" \"{Path.Join(kits, "kernel32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "mswsock.lib")}\"";
+		argString += $" \"{Path.Join(kits, "ncrypt.lib")}\"";
+		argString += $" \"{Path.Join(kits, "ntdll.lib")}\"";
+		argString += $" \"{Path.Join(kits, "ole32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "oleaut32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "secur32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "user32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "uuid.lib")}\"";
+		argString += $" \"{Path.Join(kits, "version.lib")}\"";
+		argString += $" \"{Path.Join(kits, "ws2_32.lib")}\"";
 
 		///<summary>
 		///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
 		///</summary>
 		// C Runtime containing native CRT startup
-		argString += $" {Path.Join(msvc, "libcmt.lib")}";
+		argString += $" \"{Path.Join(msvc, "libcmt.lib")}\"";
 		// C++ multithreaded runtime
-		argString += $" {Path.Join(msvc, "msvcprt.lib")}";
-		argString += $" {Path.Join(msvc, "vcruntime.lib")}";
-		argString += $" {Path.Join(msvc, "oldnames.lib")}";
+		argString += $" \"{Path.Join(msvc, "msvcprt.lib")}\"";
+		argString += $" \"{Path.Join(msvc, "vcruntime.lib")}\"";
+		argString += $" \"{Path.Join(msvc, "oldnames.lib")}\"";
 		// use ucrt instead of statically linking libucrt
-		argString += $" {Path.Join(kits, "ucrt.lib")}";
+		argString += $" \"{Path.Join(kits, "ucrt.lib")}\"";
 
 		foreach (string arg in args)
 		{
