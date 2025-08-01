@@ -117,18 +117,18 @@ class Dflat
 			if (result.GetValue(verbosity)) { verbose = true; }
 			foreach (string path in result.GetValue(externalLibsOption))
 			{
-				if (!File.Exists(path))
-				{
-					Console.Error.WriteLine($"{path} does not exist");
-					return;
-				}
 				if (File.GetAttributes(path).HasFlag(FileAttributes.Directory))
 				{
 					foreach (string dll in Directory.GetFiles(path).Where(file => file.EndsWith(".dll")))
 					{
-						externalLibs.Add(Path.Join(path, dll));
+						externalLibs.Add(new FileInfo(dll).FullName);
 					}
 					continue;
+				}
+				else if (!File.Exists(path))
+				{
+					Console.Error.WriteLine($"{path} does not exist");
+					return;
 				}
 				externalLibs.Add(new FileInfo(path).FullName);
 			}
