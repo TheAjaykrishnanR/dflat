@@ -71,3 +71,4 @@ cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtime
 
 # pack
 # Compress-Archive .\build\* dflat-linux-test-x64.zip
+tar -czvf test-linux-x64.tar.gz build

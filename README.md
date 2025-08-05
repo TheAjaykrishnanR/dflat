@@ -27,3 +27,17 @@ cd dflat
 .\assemble.ps1
 ```
 
+### How it works
+
+To compile a C# program to a native executable we need:
+
+1. CSC
+2. ILCompiler
+3. A linker
+4. runtime (managed + native)
+
+`csc.exe` : To get the csc executable we build the csc project in the [dotnet/runtime](https://github.com/dotnet/runtime) repo.
+A slight modification is made to the `csc.csproj` file so that csc itself is aot compiled and we get a single native executable.
+
+
+
