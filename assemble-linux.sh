@@ -18,30 +18,32 @@ chmod +x ./roslyn/restore.sh
 cp roslyn/artifacts/bin/csc/Release/net*/linux-x64/publish/csc build/csc/csc
 
 # build ilc, runtime, libs (dotnet\runtime)
-git clone --depth 1 -b main https://github.com/dotnet/runtime
-sudo apt install libkrb5-dev liblttng-ust-dev
-./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
-coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release"
-cp -r $coreclr/aotsdk/* build/libs/aotsdk/
-cp -r $coreclr/x64/ilc/* build/ilc/
-cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
-cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
-
-rm build/libs/aotsdk/*.xml
-rm build/libs/aotsdk/*.pdb
-rm build/libs/refs/*.xml
-rm build/libs/refs/*.pdb
-rm build/libs/runtime/*.xml
-rm build/libs/runtime/*.pdb
-rm build/ilc/*.pdb
-rm build/ilc/*universal*
-rm build/ilc/*win*
+# git clone --depth 1 -b main https://github.com/dotnet/runtime
+# sudo apt install libkrb5-dev liblttng-ust-dev
+# ./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
+# coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release"
+# cp -r $coreclr/aotsdk/* build/libs/aotsdk/
+# cp -r $coreclr/x64/ilc/* build/ilc/
+# cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
+# cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
+# 
+# rm build/libs/aotsdk/*.xml
+# rm build/libs/aotsdk/*.pdb
+# rm build/libs/refs/*.xml
+# rm build/libs/refs/*.pdb
+# rm build/libs/runtime/*.xml
+# rm build/libs/runtime/*.pdb
+# rm build/ilc/*.pdb
+# rm build/ilc/*universal*
+# rm build/ilc/*win*
 
 # lld-link (llvm)
-curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-mkdir llvm
-tar -xvf llvm.tar.xz -C llvm
-cp llvm/*/bin/lld-link build/linker/lld-link
+# curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
+# mkdir llvm
+# tar -xvf llvm.tar.xz -C llvm
+# cp llvm/*/bin/lld-link build/linker/lld-link
+
+# ---
 
 # kits (Windows SDK)
 # $kitlibs = @("advapi32", "bcrypt", "crypt32", "d3d11", "dxgi", "gdi32", "iphlpapi", "kernel32", "mswsock", "ncrypt", "ntdll", "ole32", "oleaut32", "secur32", "user32", "uuid", "version", "ws2_32")
@@ -55,6 +57,8 @@ cp llvm/*/bin/lld-link build/linker/lld-link
 # 	& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\VC\Tools\MSVC\14.44.35207\lib\x64\$name.lib" build\libs\msvc\$name.lib
 # }
 # & "C:\Program Files\Git\usr\bin\cp.exe" "msvc\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64\ucrt.lib" build\libs\kits\ucrt.lib
+#
+# ---
 
 # compile dflat.cs
 # curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
