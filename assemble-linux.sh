@@ -20,12 +20,13 @@ mkdir -p build/libs/msvc
 # build ilc, runtime, libs (dotnet\runtime)
 git clone --depth 1 -b main https://github.com/dotnet/runtime
 sudo apt install libkrb5-dev liblttng-ust-dev
-./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
+./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -rc Release -lc Release
 coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release"
 cp -r $coreclr/aotsdk/* build/libs/aotsdk/
 cp -r $coreclr/x64/ilc/* build/ilc/
 cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
 cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
+cp runtime/artifacts/bin/native/*/*.a build/libs/aotsdk
 
 rm build/libs/aotsdk/*.xml
 rm build/libs/aotsdk/*.pdb
