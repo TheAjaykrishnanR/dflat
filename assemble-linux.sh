@@ -9,33 +9,33 @@ mkdir -p build/libs/kits
 mkdir -p build/libs/msvc
 
 # build csc (dotnet\roslyn)
-git clone --depth 1 -b main https://github.com/dotnet/roslyn 
-rm roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
-cp .github/diffs/csc-linux.csproj roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
-chmod +x ./roslyn/restore.sh
-./roslyn/restore.sh
-./roslyn/.dotnet/dotnet publish roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj 
-cp roslyn/artifacts/bin/csc/Release/net*/linux-x64/publish/csc build/csc/csc
+# git clone --depth 1 -b main https://github.com/dotnet/roslyn 
+# rm roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
+# cp .github/diffs/csc-linux.csproj roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
+# chmod +x ./roslyn/restore.sh
+# ./roslyn/restore.sh
+# ./roslyn/.dotnet/dotnet publish roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj 
+# cp roslyn/artifacts/bin/csc/Release/net*/linux-x64/publish/csc build/csc/csc
 
 # build ilc, runtime, libs (dotnet\runtime)
-# git clone --depth 1 -b main https://github.com/dotnet/runtime
-# sudo apt install libkrb5-dev liblttng-ust-dev
-# ./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
-# coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release"
-# cp -r $coreclr/aotsdk/* build/libs/aotsdk/
-# cp -r $coreclr/x64/ilc/* build/ilc/
-# cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
-# cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
-# 
-# rm build/libs/aotsdk/*.xml
-# rm build/libs/aotsdk/*.pdb
-# rm build/libs/refs/*.xml
-# rm build/libs/refs/*.pdb
-# rm build/libs/runtime/*.xml
-# rm build/libs/runtime/*.pdb
-# rm build/ilc/*.pdb
-# rm build/ilc/*universal*
-# rm build/ilc/*win*
+git clone --depth 1 -b main https://github.com/dotnet/runtime
+sudo apt install libkrb5-dev liblttng-ust-dev
+./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -os linux -rc Release -lc Release
+coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release"
+cp -r $coreclr/aotsdk/* build/libs/aotsdk/
+cp -r $coreclr/x64/ilc/* build/ilc/
+cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
+cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
+
+rm build/libs/aotsdk/*.xml
+rm build/libs/aotsdk/*.pdb
+rm build/libs/refs/*.xml
+rm build/libs/refs/*.pdb
+rm build/libs/runtime/*.xml
+rm build/libs/runtime/*.pdb
+rm build/ilc/*.pdb
+rm build/ilc/*universal*
+rm build/ilc/*win*
 
 # lld-link (llvm)
 # curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
