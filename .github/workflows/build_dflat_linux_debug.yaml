@@ -17,7 +17,7 @@ jobs:
         chmod +x assemble-linux.sh
         ./assemble-linux.sh
       shell: bash
-    - uses: ncipollo/release-action@v1
-      with:
-        artifacts: d:/a/dflat/dflat/test-linux-x64.tar.gz
-        tag: "test-${{ github.run_number }}-${{ github.run_attempt }}"
+    # - uses: ncipollo/release-action@v1
+    #  with:
+    #    artifacts: d:/a/dflat/dflat/test-linux-x64.tar.gz
+    #    tag: "test-${{ github.run_number }}-${{ github.run_attempt }}"
