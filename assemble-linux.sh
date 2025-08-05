@@ -41,7 +41,7 @@ rm build/ilc/*win*
 curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
 mkdir llvm
 tar -xvf llvm.tar.xz -C llvm
-cp llvm/*/bin/lld build/linker/lld
+cp llvm/*/bin/lld-link build/linker/lld-link
 
 # kits (Windows SDK)
 # $kitlibs = @("advapi32", "bcrypt", "crypt32", "d3d11", "dxgi", "gdi32", "iphlpapi", "kernel32", "mswsock", "ncrypt", "ntdll", "ole32", "oleaut32", "secur32", "user32", "uuid", "version", "ws2_32")
