@@ -13,14 +13,13 @@ class Dflat
 {
 	public static string home = new FileInfo(Environment.ProcessPath).Directory.FullName;
 	public static string cwd = Directory.GetCurrentDirectory();
-	public static string csc = Path.Join(home, @"csc\csc.exe");
-	public static string ilc = Path.Join(home, @"ilc\ilc.exe");
-	public static string linker = Path.Join(home, @"linker\lld-link.exe");
-	public static string aotsdk = Path.Join(home, @"libs\aotsdk");
-	public static string refs = Path.Join(home, @"libs\refs");
-	public static string runtime = Path.Join(home, @"libs\runtime");
-	public static string kits = Path.Join(home, @"libs\kits");
-	public static string msvc = Path.Join(home, @"libs\msvc");
+	public static string csc = Path.Join(home, @"csc/csc");
+	public static string ilc = Path.Join(home, @"ilc/ilc");
+	public static string linker = @"/usr/bin/ld.bfd";
+	public static string aotsdk = Path.Join(home, @"libs/aotsdk");
+	public static string refs = Path.Join(home, @"libs/refs");
+	public static string runtime = Path.Join(home, @"libs/runtime");
+	public static string kits = Path.Join(home, @"libs/kits");
 
 	static List<string> externalLibs = new();
 	static List<string> cscExtraArgs = new(), ilcExtraArgs = new(), linkerExraArgs = new();
@@ -32,16 +31,15 @@ class Dflat
 	static void Main(string[] args)
 	{
 		// check compilers
-		if (!File.Exists(csc)) throw new Exception($"{csc} not found");
-		if (!File.Exists(ilc)) throw new Exception($"{ilc} not found");
-		if (!File.Exists(linker)) throw new Exception($"{linker} not found");
+		if (!File.Exists(csc)) { Console.WriteLine($"{csc} not found"); return; }
+		if (!File.Exists(ilc)) { Console.WriteLine($"{ilc} not found"); return; }
+		if (!File.Exists(linker)) { Console.WriteLine($"{linker} not found"); return; }
 
 		// check refs + runtime assemblies + aotsdk
-		if (!Directory.Exists(aotsdk)) throw new Exception($"{aotsdk} not found");
-		if (!Directory.Exists(refs)) throw new Exception($"{refs} not found");
-		if (!Directory.Exists(runtime)) throw new Exception($"{runtime} not found");
-		if (!Directory.Exists(kits)) throw new Exception($"{kits} not found");
-		if (!Directory.Exists(msvc)) throw new Exception($"{msvc} not found");
+		if (!Directory.Exists(aotsdk)) { Console.WriteLine($"{aotsdk} not found"); return; }
+		if (!Directory.Exists(refs)) { Console.WriteLine($"{refs} not found"); return; }
+		if (!Directory.Exists(runtime)) { Console.WriteLine($"{runtime} not found"); return; }
+		if (!Directory.Exists(kits)){ Console.WriteLine($"{kits} not found"); return; } 
 
 		Argument<List<FileInfo>> sourceFilesArg = new("SOURCE FILES") { Description = ".cs files to compile", };
 		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
@@ -172,7 +170,7 @@ class Dflat
 		{
 			def = Path.Join(tmpDir, $"{program}.def");
 			cscExtraArgs.Add($"/target:library");
-			ilcExtraArgs.AddRange(["--nativelib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
+			ilcExtraArgs.AddRange(["--nativlib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
 			linkerExraArgs.AddRange(["/dll", $"/def:{def}", "/noimplib"]);
 		}
 		else if (outputType == CSCTargets.WINEXE) { cscExtraArgs.Add($"/target:winexe"); }
@@ -257,15 +255,18 @@ class Dflat
 		argString += $" -r:{Path.Join(aotsdk, "*.dll")}";
 		argString += $" -r:{Path.Join(runtime, "*.dll")}";
 		argString += $" -g";
-		argString += $" --generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN";
+		argString += $" --generateunmanagedentrypoints:System.Private.CoreLib";
 		argString += $" --dehydrate";
 		argString += $" --initassembly:System.Private.CoreLib";
 		argString += $" --initassembly:System.Private.StackTraceMetadata";
 		argString += $" --initassembly:System.Private.TypeLoader";
 		argString += $" --initassembly:System.Private.Reflection.Execution";
-		argString += $" --directpinvokelist:{Path.Join(home, @"libs\WindowsAPIs.txt")}";
-		argString += $" --directpinvoke:System.Globalization.Native";
-		argString += $" --directpinvoke:System.IO.Compression.Native";
+		argString += $" --directpinvoke:libSystem.Native";
+		argString += $" --directpinvoke:libSystem.Globalization.Native";
+		argString += $" --directpinvoke:libSystem.IO.Compression.Native";
+		argString += $" --directpinvoke:libSystem.Net.Security.Native";
+		argString += $" --directpinvoke:libSystem.Security.Cryptography.Native.OpenSsl";
+		argString += $" --jitpath:/home/jayakuttan/dflat/ilc/libclrjit_unix_x64_x64.so";
 		argString += $" --stacktracedata";
 		argString += $" --scanreflection";
 		//
@@ -290,65 +291,66 @@ class Dflat
 		CallCompiler(ilc, argString);
 		return File.Exists(obj);
 	}
+	
+	static string glibc = @"/lib/x86_64-linux-gnu";
+	static string gcc = @"/usr/lib/gcc/x86_64-linux-gnu";
+	static int GetGccVer() {
+		return Directory.GetDirectories(gcc).ToList().Select(folder => Convert.ToInt32(new DirectoryInfo(folder).Name)).Max();
+	}
+	static string gcclibs = Path.Join(gcc, GetGccVer().ToString());
 
 	static bool Link(List<string> args)
 	{
 		Log("Linking...");
-		string argString = $"{obj} /out:{exe} /subsystem:console";
+		string argString = "";
+		
+		argString += $" {obj}";
 		argString += outputType switch
 		{
-			CSCTargets.EXE => $" {Path.Join(aotsdk, "bootstrapper.obj")}",
-			CSCTargets.LIBRARY => $" {Path.Join(aotsdk, "bootstrapperdll.obj")}",
+			CSCTargets.EXE => $" {Path.Join(aotsdk, "libbootstrapper.o")}",
+			CSCTargets.LIBRARY => $" {Path.Join(aotsdk, "libbootstrapperdll.o")}",
 		};
-		argString += $" {Path.Join(aotsdk, "dllmain.obj")}";
-		argString += $" {Path.Join(aotsdk, "Runtime.ServerGC.lib")}";
-		argString += $" {Path.Join(aotsdk, "standalonegc-disabled.lib")}";
-		argString += $" {Path.Join(aotsdk, "aotminipal.lib")}";
-		argString += $" {Path.Join(aotsdk, "brotlicommon.lib")}";
-		argString += $" {Path.Join(aotsdk, "eventpipe-enabled.lib")}";
-		argString += $" {Path.Join(aotsdk, "Runtime.WorkstationGC.lib")}";
-		argString += $" {Path.Join(aotsdk, "brotlidec.lib")}";
-		argString += $" {Path.Join(aotsdk, "brotlienc.lib")}";
-		argString += $" {Path.Join(aotsdk, "Runtime.VxsortEnabled.lib")}";
-		argString += $" {Path.Join(aotsdk, "System.Globalization.Native.Aot.lib")}";
-		argString += $" {Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}";
-		argString += $" {Path.Join(aotsdk, "zlibstatic.lib")}";
-		argString += $" {Path.Join(kits, "advapi32.lib")}";
-		argString += $" {Path.Join(kits, "bcrypt.lib")}";
-		argString += $" {Path.Join(kits, "crypt32.lib")}";
-		argString += $" {Path.Join(kits, "iphlpapi.lib")}";
-		argString += $" {Path.Join(kits, "kernel32.lib")}";
-		argString += $" {Path.Join(kits, "mswsock.lib")}";
-		argString += $" {Path.Join(kits, "ncrypt.lib")}";
-		argString += $" {Path.Join(kits, "ntdll.lib")}";
-		argString += $" {Path.Join(kits, "ole32.lib")}";
-		argString += $" {Path.Join(kits, "oleaut32.lib")}";
-		argString += $" {Path.Join(kits, "secur32.lib")}";
-		argString += $" {Path.Join(kits, "user32.lib")}";
-		argString += $" {Path.Join(kits, "uuid.lib")}";
-		argString += $" {Path.Join(kits, "version.lib")}";
-		argString += $" {Path.Join(kits, "ws2_32.lib")}";
+		argString += $" {Path.Join(aotsdk, "libRuntime.WorkstationGC.a")}";
+		argString += $" {Path.Join(aotsdk, "libeventpipe-disabled.a")}";
+		argString += $" {Path.Join(aotsdk, "libRuntime.VxsortEnabled.a")}";
+		argString += $" {Path.Join(aotsdk, "libstandalonegc-disabled.a")}";
+		argString += $" {Path.Join(aotsdk, "libstdc++compat.a")}";
+		argString += $" {Path.Join(aotsdk, "libSystem.Native.a")}";
+		argString += $" {Path.Join(aotsdk, "libSystem.Globalization.Native.a")}";
+		argString += $" {Path.Join(aotsdk, "libSystem.IO.Compression.Native.a")}";
+		argString += $" {Path.Join(aotsdk, "libSystem.Net.Security.Native.a")}";
+		argString += $" {Path.Join(aotsdk, "libSystem.Security.Cryptography.Native.OpenSsl.a")}";
+		argString += $" {Path.Join(aotsdk, "libz.a")}";
+		argString += $" {Path.Join(aotsdk, "libaotminipal.a")}";
+		argString += $" {Path.Join(aotsdk, "libbrotlicommon.a")}";
+		argString += $" {Path.Join(aotsdk, "libbrotlidec.a")}";
+		argString += $" {Path.Join(aotsdk, "libbrotlienc.a")}";
+		argString += $" {Path.Join(glibc, "crt1.o")}";
+		argString += $" {Path.Join(glibc, "crti.o")}";
+		argString += $" {Path.Join(glibc, "crtn.o")}";
+		argString += $" {Path.Join(glibc, "libc.so")}";
+		argString += $" {Path.Join(glibc, "libc.so.6")}";
+		argString += $" {Path.Join(glibc, "libpthread.so.0")}";
+		argString += $" {Path.Join(glibc, "libm.so")}";
+		argString += $" {Path.Join(glibc, "libm.so.6")}";
+		argString += $" {Path.Join(glibc, "libdl.so.2")}";
+		argString += $" {Path.Join(glibc, "librt.so.1")}";
+		argString += $" {Path.Join(gcclibs, "crtbeginS.o")}";
+		argString += $" {Path.Join(gcclibs, "crtendS.o")}";
+		argString += $" --output={exe}";
+		argString += $" --dynamic-linker=/lib64/ld-linux-x86-64.so.2";
+		argString += $" --nostdlib";
+		argString += $" --compress-debug-sections=zlib";
+		argString += $" --discard-all";
+		argString += $" --gc-sections";
+		argString += $" --as-needed";
+		argString += $" --strip-all";
+		argString += $" -pie";
 
-		// Remove defaults so that we control exactly what gets added
-		argString += $" /nodefaultlib:libcmt.lib";
-		argString += $" /nodefaultlib:libcpmt.lib";
-		argString += $" /nodefaultlib:oldnames.lib";
-		argString += $" /nodefaultlib:libucrt.lib";
-		argString += $" /nodefaultlib:libvcruntime.lib";
-		
-		///<summary>
-		///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
-		///</summary>
-		// C Runtime containing native CRT startup
-		argString += $" {Path.Join(msvc, "libcmt.lib")}";
-		// C++ multithreaded runtime
-		argString += $" {Path.Join(msvc, "msvcprt.lib")}";
-
-		argString += $" {Path.Join(msvc, "vcruntime.lib")}";
-		argString += $" {Path.Join(msvc, "oldnames.lib")}";
-
-		// use ucrt instead of statically linking libucrt
-		argString += $" {Path.Join(kits, "ucrt.lib")}";
+		argString += $" -z relro";
+		argString += $" -z now";
+		argString += $" --eh-frame-hdr";
+		argString += $" --export-dynamic";
 
 		foreach (string arg in args)
 		{
