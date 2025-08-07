@@ -346,14 +346,17 @@ class Dflat
 		///<summary>
 		///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
 		///</summary>
-		// C Runtime containing native CRT startup
+
+		// actual crt
+		// use ucrt instead of statically linking libucrt since ucrt is now part of windows 
+		argString += $" \"{Path.Join(kits, "ucrt.lib")}\"";
+		// crt initializer (crt startup)
 		argString += $" \"{Path.Join(msvc, "libcmt.lib")}\"";
 		// C++ multithreaded runtime
 		argString += $" \"{Path.Join(msvc, "msvcprt.lib")}\"";
 		argString += $" \"{Path.Join(msvc, "vcruntime.lib")}\"";
 		argString += $" \"{Path.Join(msvc, "oldnames.lib")}\"";
-		// use ucrt instead of statically linking libucrt
-		argString += $" \"{Path.Join(kits, "ucrt.lib")}\"";
+
 
 		foreach (string arg in args)
 		{
