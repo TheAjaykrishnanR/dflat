@@ -37,10 +37,10 @@ Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*unix*"
 Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*universal*"
 
 # lld-link (llvm)
-curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
-mkdir llvm
-& "C:\Program Files\Git\usr\bin\tar.exe" -xvf llvm.tar.xz -C llvm
-cp llvm\*\bin\lld-link.exe build\linker\lld-link.exe
+# curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
+# mkdir llvm
+# & "C:\Program Files\Git\usr\bin\tar.exe" -xvf llvm.tar.xz -C llvm
+# cp llvm\*\bin\lld-link.exe build\linker\lld-link.exe
 
 # kits (Windows SDK)
 $kitlibs = @("advapi32", "bcrypt", "crypt32", "d3d11", "dxgi", "gdi32", "iphlpapi", "kernel32", "mswsock", "ncrypt", "ntdll", "ole32", "oleaut32", "secur32", "user32", "uuid", "version", "ws2_32")
@@ -54,6 +54,10 @@ foreach($name in $msvclibs) {
 	& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\VC\Tools\MSVC\14.44.35207\lib\x64\$name.lib" build\libs\msvc\$name.lib
 }
 & "C:\Program Files\Git\usr\bin\cp.exe" "msvc\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64\ucrt.lib" build\libs\kits\ucrt.lib
+
+# copy link.exe from msvc
+& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\VC\Tools\MSVC\*\bin\Hostx64\x64\link.exe" build\linker\link.exe
+& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\VC\Tools\MSVC\*\bin\Hostx64\x64\mspdbcore.dll" build\linker\mspdbcore.dll
 
 # compile dflat.cs
 curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103

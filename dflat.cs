@@ -15,7 +15,7 @@ class Dflat
 	public static string cwd = Directory.GetCurrentDirectory();
 	public static string csc = Path.Join(home, @"csc\csc.exe");
 	public static string ilc = Path.Join(home, @"ilc\ilc.exe");
-	public static string linker = Path.Join(home, @"linker\lld-link.exe");
+	public static string linker = Path.Join(home, @"linker\link.exe");
 	public static string aotsdk = Path.Join(home, @"libs\aotsdk");
 	public static string refs = Path.Join(home, @"libs\refs");
 	public static string runtime = Path.Join(home, @"libs\runtime");
@@ -308,7 +308,7 @@ class Dflat
 	static bool Link(List<string> args)
 	{
 		Log("Linking...");
-		string argString = $"{obj} /out:{exe} /nodefaultlib /subsystem:console";
+		string argString = $"{obj} /out:{exe} /nodefaultlib /subsystem:console /nologo";
 		argString += outputType switch
 		{
 			CSCTargets.EXE => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",

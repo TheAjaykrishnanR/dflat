@@ -56,8 +56,9 @@ $obj = "$program.obj"
 	--directpinvoke:System.Globalization.Native `
 	--directpinvoke:System.IO.Compression.Native 
 
-$kits = "libs\kits"
-.\linker\lld-link $obj `
+$kits = "$cwd\libs\kits"
+$msvc = "$cwd\libs\msvc"
+.\linker\link $obj `
 	"$aotsdk\bootstrapper.obj" `
 	"$aotsdk\dllmain.obj" `
 	"$aotsdk\Runtime.ServerGC.lib" `
@@ -78,8 +79,14 @@ $kits = "libs\kits"
 	"$kits\user32.lib" `
 	"$kits\kernel32.lib" `
 	"$kits\version.lib" `
+	"$msvc\libcmt.lib" `
+	"$msvc\msvcprt.lib" `
+	"$msvc\vcruntime.lib" `
+	"$msvc\oldnames.lib" `
+	"$kits\ucrt.lib" `
 	/subsystem:console `
 	"/out:$program.exe" `
+	/nodefaultlib `
 
 # cleanup
 rm "$program.il.exe"
