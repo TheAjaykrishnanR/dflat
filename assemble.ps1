@@ -56,8 +56,8 @@ foreach($name in $msvclibs) {
 & "C:\Program Files\Git\usr\bin\cp.exe" "msvc\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64\ucrt.lib" build\libs\kits\ucrt.lib
 
 # copy link.exe from msvc
-& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\VC\Tools\MSVC\*\bin\Hostx64\x64\link.exe" build\linker\link.exe
-& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\VC\Tools\MSVC\*\bin\Hostx64\x64\mspdbcore.dll" build\linker\mspdbcore.dll
+cp msvc\VC\Tools\MSVC\*\bin\Hostx64\x64\link.exe build\linker\link.exe
+cp msvc\VC\Tools\MSVC\*\bin\Hostx64\x64\mspdbcore.dll build\linker\mspdbcore.dll
 
 # compile dflat.cs
 curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
