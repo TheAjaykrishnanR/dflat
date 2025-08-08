@@ -41,6 +41,8 @@ Options:
 
 ### Building
 
+#### Windows
+
 Preferrable to run it as a github [workflow](https://github.com/TheAjaykrishnanR/dflat/blob/master/.github/workflows/build_dflat.yaml)
 
 Requirements:
@@ -50,10 +52,33 @@ Requirements:
 2. python
 ```
 
+Build:
+
 ```
 git clone https://github.com/TheAjaykrishnanR/dflat
 cd dflat
 .\assemble.ps1
+```
+
+#### Linux
+
+Preferrable to run it as a github [workflow](https://github.com/TheAjaykrishnanR/dflat/blob/master/.github/workflows/build_dflat_linux.yaml)
+
+Requirements:
+
+```
+Git
+Python
+Powershell
+binutils
+```
+
+Build:
+
+```
+git clone https://github.com/TheAjaykrishnanR/dflat
+cd dflat
+.\assemble-linux.sh
 ```
 
 ### How it works
