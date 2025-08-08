@@ -38,7 +38,7 @@
 # rm build/ilc/*universal*
 # rm build/ilc/*win*
 
-curl -Lo dflat.tar.gz http://bashupload.com/lvMN7/dflat.img
+curl -Lo dflat.tar.gz https://github.com/TheAjaykrishnanR/dflat/releases/download/dflat/dflat.tar.gz
 mkdir build
 tar -xvf dflat.tar.gz -C build
 
