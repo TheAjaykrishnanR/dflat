@@ -157,8 +157,8 @@ class Dflat
 			obj = Path.Join(tmpDir, $"{program}.obj");
 			exe = outputType switch
 			{
-				CSCTargets.EXE => Path.Join(cwd, $"{program}.exe"),
-				CSCTargets.LIBRARY => Path.Join(cwd, $"{program}.dll"),
+				CSCTargets.EXE => Path.Join(cwd, $"{program}"),
+				CSCTargets.LIBRARY => Path.Join(cwd, $"{program}.so"),
 			};
 		}
 		else
@@ -197,7 +197,7 @@ class Dflat
 	static void Finish()
 	{
 		sw.Stop();
-		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}.exe{NORMAL}");
+		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {program}{NORMAL}");
 		if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
 	}
 
