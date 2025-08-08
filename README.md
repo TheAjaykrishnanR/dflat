@@ -1,6 +1,6 @@
 ## dflat, a native aot compiler for C#
 
-Inspired by  [bflat](https://github.com/bflattened/bflat)
+>Inspired by  [bflat](https://github.com/bflattened/bflat)
 
 ![demo](https://github.com/TheAjaykrishnanR/dflat/blob/master/imgs/WindowsTerminal_IMA1T6cL6n.gif)
 
