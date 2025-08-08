@@ -2,6 +2,8 @@
 
 Inspired by  [bflat](https://github.com/bflattened/bflat)
 
+![demo](https://github.com/TheAjaykrishnanR/dflat/blob/master/imgs/WindowsTerminal_IMA1T6cL6n.gif)
+
 ### Usage
 
 Download from [releases](https://github.com/TheAjaykrishnanR/dflat/releases/tag/dflat-3-1)
