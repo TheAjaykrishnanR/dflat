@@ -1,4 +1,4 @@
-name: Build dflat linux [tmate]
+name: Build dflat linux
 on: [workflow_dispatch]
 
 jobs:
