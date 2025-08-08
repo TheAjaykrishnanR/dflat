@@ -6,6 +6,7 @@ jobs:
     name: Run Script
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
     - name: Run assemble script
       run: | 
         chmod +x assemble-linux.sh
