@@ -47,7 +47,6 @@ $obj = "$program.obj"
 	--directpinvoke:libSystem.IO.Compression.Native `
 	--directpinvoke:libSystem.Net.Security.Native `
 	--directpinvoke:libSystem.Security.Cryptography.Native.OpenSsl `
-	--jitpath:/home/jayakuttan/dflat/ilc/libclrjit_unix_x64_x64.so `
 	--stacktracedata `
 	--scanreflection `
 	--feature:System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization=false `

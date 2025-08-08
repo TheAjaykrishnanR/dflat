@@ -39,7 +39,7 @@ class Dflat
 		if (!Directory.Exists(aotsdk)) { Console.WriteLine($"{aotsdk} not found"); return; }
 		if (!Directory.Exists(refs)) { Console.WriteLine($"{refs} not found"); return; }
 		if (!Directory.Exists(runtime)) { Console.WriteLine($"{runtime} not found"); return; }
-		if (!Directory.Exists(kits)){ Console.WriteLine($"{kits} not found"); return; } 
+		if (!Directory.Exists(kits)) { Console.WriteLine($"{kits} not found"); return; }
 
 		Argument<List<FileInfo>> sourceFilesArg = new("SOURCE FILES") { Description = ".cs files to compile", };
 		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
@@ -277,7 +277,7 @@ class Dflat
 		argString += $" --feature:System.Globalization.Invariant=true";
 		argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
 		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
-		
+
 		foreach (string dll in externalLibs)
 		{
 			argString += $" -r:{dll}";
@@ -290,10 +290,11 @@ class Dflat
 		CallCompiler(ilc, argString);
 		return File.Exists(obj);
 	}
-	
+
 	static string glibc = @"/lib/x86_64-linux-gnu";
 	static string gcc = @"/usr/lib/gcc/x86_64-linux-gnu";
-	static int GetGccVer() {
+	static int GetGccVer()
+	{
 		return Directory.GetDirectories(gcc).ToList().Select(folder => Convert.ToInt32(new DirectoryInfo(folder).Name)).Max();
 	}
 	static string gcclibs = Path.Join(gcc, GetGccVer().ToString());
@@ -302,7 +303,7 @@ class Dflat
 	{
 		Log("Linking...");
 		string argString = "";
-		
+
 		argString += $" {obj}";
 		argString += outputType switch
 		{
