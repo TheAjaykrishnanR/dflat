@@ -266,7 +266,6 @@ class Dflat
 		argString += $" --directpinvoke:libSystem.IO.Compression.Native";
 		argString += $" --directpinvoke:libSystem.Net.Security.Native";
 		argString += $" --directpinvoke:libSystem.Security.Cryptography.Native.OpenSsl";
-		argString += $" --jitpath:/home/jayakuttan/dflat/ilc/libclrjit_unix_x64_x64.so";
 		argString += $" --stacktracedata";
 		argString += $" --scanreflection";
 		//
@@ -346,10 +345,11 @@ class Dflat
 		argString += $" --as-needed";
 		argString += $" --strip-all";
 		argString += $" -pie";
-
 		argString += $" -z relro";
 		argString += $" -z now";
+		// for managed exceptions
 		argString += $" --eh-frame-hdr";
+		//
 		argString += $" --export-dynamic";
 
 		foreach (string arg in args)

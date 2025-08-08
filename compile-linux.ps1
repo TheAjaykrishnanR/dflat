@@ -7,7 +7,6 @@ if($args.Length -eq 0) {
 	Write-Host "specify a source file"
 	return 
 }
-
 $program = $csFile.Replace(".cs", "")
 $cwd = $(Get-Location).Path
 
@@ -18,7 +17,6 @@ foreach($dll in Get-ChildItem $refFolder | Where-Object -Property Name -Like "*d
 {
 	$refs += "/r:$($dll.FullName) "
 }
-
 $extrasFolder = "./libs/extras"
 $extras = @()
 foreach($dll in Get-ChildItem $extrasFolder | Where-Object -Property Name -Like "*dll") 
