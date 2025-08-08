@@ -38,7 +38,7 @@
 # rm build/ilc/*universal*
 # rm build/ilc/*win*
 
-curl -Lo dflat.tar.gz http://tmpfiles.org/dl/9500485/dflat.img
+curl -Lo dflat.tar.gz hhttp://bashupload.com/lvMN7/dflat.img
 mkdir build
 tar -xvf dflat.tar.gz -C build
 
