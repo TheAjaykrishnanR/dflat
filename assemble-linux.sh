@@ -55,10 +55,11 @@ cp compile-linux.ps1 build/compile-linux.ps1
 cp dflat-linux.cs build/dflat-linux.cs
 cd build
 pwsh compile-linux.ps1 dflat-linux.cs
+mv dflat-linux.exe dflat
 rm compile-linux.ps1
 rm dflat-linux.cs
 rm -rf ./libs/extras
 cd ..
 
 # pack
-tar -czvf dflat-linux-x64.tar.gz build
+tar -czvf dflat-linux-x64.tar.gz build/*

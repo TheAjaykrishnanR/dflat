@@ -60,7 +60,7 @@ $obj = "$program.obj"
 
 
 $glibc = "/lib/x86_64-linux-gnu";
-$gcclibs = "/usr/lib/gcc/x86_64-linux-gnu/13";
+$gcclibs = $(Get-Item /usr/lib/gcc/x86_64-linux-gnu/*/crtbeginS.o).Directory.FullName;
 ld.bfd `
 	"$glibc/crt1.o" `
 	"$glibc/crti.o" `
