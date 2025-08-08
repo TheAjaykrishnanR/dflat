@@ -4,7 +4,7 @@ Inspired by  [bflat](https://github.com/bflattened/bflat)
 
 ### Usage
 
-Download from [releases](https://github.com/TheAjaykrishnanR/dflat/releases/tag/dflat)
+Download from [releases](https://github.com/TheAjaykrishnanR/dflat/releases/tag/dflat-3-1)
 
 ```
 dflat main.cs
