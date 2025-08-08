@@ -1,46 +1,42 @@
-# mkdir -p build/csc
-# mkdir -p build/ilc
-# mkdir -p build/linker
-# mkdir -p build/libs/aotsdk
-# mkdir -p build/libs/refs
-# mkdir -p build/libs/runtime
-# mkdir -p build/libs/extras
-# mkdir -p build/libs/kits
-# mkdir -p build/libs/msvc
+mkdir -p build/csc
+mkdir -p build/ilc
+mkdir -p build/linker
+mkdir -p build/libs/aotsdk
+mkdir -p build/libs/refs
+mkdir -p build/libs/runtime
+mkdir -p build/libs/extras
+mkdir -p build/libs/kits
+mkdir -p build/libs/msvc
 
 # build csc (dotnet\roslyn)
-# git clone --depth 1 -b main https://github.com/dotnet/roslyn 
-# rm roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
-# cp .github/diffs/csc-linux.csproj roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
-# chmod +x ./roslyn/restore.sh
-# ./roslyn/restore.sh
-# ./roslyn/.dotnet/dotnet publish roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj 
-# cp roslyn/artifacts/bin/csc/Release/net*/linux-x64/publish/csc build/csc/csc
+git clone --depth 1 -b main https://github.com/dotnet/roslyn 
+rm roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
+cp .github/diffs/csc-linux.csproj roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj
+chmod +x ./roslyn/restore.sh
+./roslyn/restore.sh
+./roslyn/.dotnet/dotnet publish roslyn/src/Compilers/CSharp/csc/AnyCpu/csc.csproj 
+cp roslyn/artifacts/bin/csc/Release/net*/linux-x64/publish/csc build/csc/csc
 
 # build ilc, runtime, libs (dotnet\runtime)
-# git clone --depth 1 -b main https://github.com/dotnet/runtime
-# sudo apt install libkrb5-dev liblttng-ust-dev
-# ./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -rc Release -lc Release
-# coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release"
-# cp -r $coreclr/aotsdk/* build/libs/aotsdk/
-# cp -r $coreclr/x64/ilc/* build/ilc/
-# cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
-# cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
-# cp runtime/artifacts/bin/native/*/*.a build/libs/aotsdk
-# 
-# rm build/libs/aotsdk/*.xml
-# rm build/libs/aotsdk/*.pdb
-# rm build/libs/refs/*.xml
-# rm build/libs/refs/*.pdb
-# rm build/libs/runtime/*.xml
-# rm build/libs/runtime/*.pdb
-# rm build/ilc/*.pdb
-# rm build/ilc/*universal*
-# rm build/ilc/*win*
+git clone --depth 1 -b main https://github.com/dotnet/runtime
+sudo apt install libkrb5-dev liblttng-ust-dev
+./runtime/build.sh clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -rc Release -lc Release
+coreclr="runtime/artifacts/bin/coreclr/linux.x64.Release"
+cp -r $coreclr/aotsdk/* build/libs/aotsdk/
+cp -r $coreclr/x64/ilc/* build/ilc/
+cp runtime/artifacts/bin/microsoft.netcore.app.ref/ref/net*/* build/libs/refs
+cp runtime/artifacts/bin/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net*/* build/libs/runtime
+cp runtime/artifacts/bin/native/*/*.a build/libs/aotsdk
 
-curl -Lo dflat.tar.gz https://github.com/TheAjaykrishnanR/dflat/releases/download/dflat/dflat.tar.gz
-mkdir build
-tar -xvf dflat.tar.gz -C build
+rm build/libs/aotsdk/*.xml
+rm build/libs/aotsdk/*.pdb
+rm build/libs/refs/*.xml
+rm build/libs/refs/*.pdb
+rm build/libs/runtime/*.xml
+rm build/libs/runtime/*.pdb
+rm build/ilc/*.pdb
+rm build/ilc/*universal*
+rm build/ilc/*win*
 
 # install pwsh
 curl -Lo pwsh.deb https://github.com/PowerShell/PowerShell/releases/download/v7.4.11/powershell_7.4.11-1.deb_amd64.deb
