@@ -61,7 +61,4 @@ rm -rf ./libs/extras
 cd ..
 
 # pack
-# Compress-Archive .\build\* dflat-linux-test-x64.zip
-# tar -czvf test-linux-x64.tar.gz build
-# mv test-linux-x64.tar.gz dflat-linux.img
-# curl -F "file=@dflat-linux.img" https://tmpfiles.org/api/v1/upload
+tar -czvf dflat-linux-x64.tar.gz build
