@@ -7,7 +7,31 @@ Inspired by  [bflat](https://github.com/bflattened/bflat)
 Download from [releases](https://github.com/TheAjaykrishnanR/dflat/releases/tag/dflat-3-1)
 
 ```
-dflat main.cs
+Description:
+  dflat, a native aot compiler for c#
+  Ajaykrishnan R, 2025
+
+Usage:
+  dflat [<SOURCE FILES>...] [options]
+
+Arguments:
+  <SOURCE FILES>  .cs files to compile
+
+Options:
+  /?, /h, /help                                                      Show help and usage information
+  /version                                                           Show version information
+  /out                                                               Output file name
+  /main                                                              Specify the class containing Main()
+  /r                                                                 Additional reference .dlls or folders containing them
+  /il                                                                Compile to IL
+  /verbosity                                                         Set verbosity
+  /langversion                                                       Print supported lang versions
+  /target <EXE|LIBRARY|WINEXE>                                       Specify the target
+  /platform <anycpu|anycpu32bitpreferred|arm|arm64|Itamium|x64|x86>  Specify the platform
+  /optimize                                                          optimize
+  /csc                                                               extra csc flags [as a single string]
+  /ilc                                                               extra ilc flags [as a single string]
+  /lld                                                               extra lld flags [as a single string]
 ```
 
 ### Building
