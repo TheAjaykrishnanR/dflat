@@ -2,7 +2,9 @@
 
 >Inspired by  [bflat](https://github.com/bflattened/bflat)
 
-![demo](https://github.com/TheAjaykrishnanR/dflat/blob/master/imgs/WindowsTerminal_IMA1T6cL6n.gif)
+<p align="center">
+    <img src="https://github.com/TheAjaykrishnanR/dflat/blob/master/imgs/WindowsTerminal_IMA1T6cL6n.gif"/>
+</p>
 
 ### Usage
 
