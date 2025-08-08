@@ -2,6 +2,7 @@
 
 > A portable and relatively lightweight C# AOT compiler. Build native executables, libraries on windows and linux. Inspired by  [bflat](https://github.com/bflattened/bflat)
 
+<br/>
 <p align="center">
     <img src="https://github.com/TheAjaykrishnanR/dflat/blob/master/imgs/WindowsTerminal_IMA1T6cL6n.gif"/>
 </p>
