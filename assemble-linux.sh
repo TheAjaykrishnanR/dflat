@@ -62,4 +62,5 @@ rm -rf ./libs/extras
 cd ..
 
 # pack
-tar -czvf dflat-linux-x64.tar.gz build/*
+mv build dflat
+tar -czvf dflat-linux-x64.tar.gz dflat

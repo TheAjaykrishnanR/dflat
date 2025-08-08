@@ -60,7 +60,9 @@ $obj = "$program.obj"
 
 
 $glibc = "/lib/x86_64-linux-gnu";
-$gcclibs = $(Get-Item /usr/lib/gcc/x86_64-linux-gnu/*/crtbeginS.o).Directory.FullName;
+$gcclibs = (Get-Item /usr/lib/gcc/x86_64-linux-gnu/*/crtbeginS.o | 
+			Sort-Object { [int]$_.Directory.Name } -Descending |
+			Select-Object -First 1).Directory.FullName;
 ld.bfd `
 	"$glibc/crt1.o" `
 	"$glibc/crti.o" `
