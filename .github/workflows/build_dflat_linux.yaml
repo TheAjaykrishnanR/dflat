@@ -1,0 +1,29 @@
+name: Build dflat linux [tmate]
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    name: Run Script
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run assemble script
+      run: | 
+        chmod +x assemble-linux.sh
+        ./assemble-linux.sh
+      shell: bash
+    - name: Get latest release tag
+      id: latest_release
+      run: |
+        LATEST_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
+        echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+        echo "Latest release tag: $LATEST_TAG"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: dflat-linux-x64.tar.gz
+        tag: ${{ steps.latest_release.outputs.tag }}
+        allowUpdates: true
+        updateOnlyUnreleased: false
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true

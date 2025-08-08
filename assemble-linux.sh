@@ -43,9 +43,8 @@ curl -Lo pwsh.deb https://github.com/PowerShell/PowerShell/releases/download/v7.
 sudo dpkg -i pwsh.deb
 
 # compile dflat.cs
-curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
-mv System.CommandLine.nupkg System.CommandLine.zip
-Expand-Archive System.CommandLine.zip
+curl -Lo System.CommandLine.zip https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
+unzip System.CommandLine.zip -d System.CommandLine
 cp "System.CommandLine/lib/net8.0/System.CommandLine.dll" "build/libs/extras/System.CommandLine.dll"
 cp compile-linux.ps1 build/compile-linux.ps1
 cp dflat-linux.cs build/dflat-linux.cs
