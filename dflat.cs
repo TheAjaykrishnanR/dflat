@@ -50,8 +50,7 @@ class Dflat
 		Option<bool> verbosity = new("/verbosity") { Description = "Set verbosity", };
 		Option<string> outputArg = new("/out") { Description = "Output file name", };
 		Option<string> entryPoint = new("/main") { Description = "Specify the class containing Main()", };
-		Option<bool> langversion = new("/langversion") { Description = "Print supported lang versions", };
-		langversion.Action = new LangversionAction();
+		Option<string> langversion = new("/langversion") { Description = "Specify lang version, /langversion:? to list all available versions", };
 		Option<CSCTargets> targetsOption = new("/target") { Description = "Specify the target", };
 		Option<CSCPlatforms> platformOption = new("/platform") { Description = "Specify the platform", };
 		Option<bool> optimizeFlag = new("/optimize") { Description = "optimize", };
@@ -94,6 +93,24 @@ class Dflat
 
 		cmd.SetAction(result =>
 		{
+			// handle options that are also flags first
+			if (result.GetValue(langversion) != null)
+			{
+				string ver = result.GetValue(langversion);
+				if (ver == "latest" || ver == "latestmajor" || ver == "default" || ver == "preview")
+					cscExtraArgs.Add($"/langversion:{ver}");
+				else if (ver == "?" || ver == "h")
+				{
+					CallCompiler(csc, "/langversion:?");
+					return;
+				}
+				else
+				{
+					Console.WriteLine("Language version not recognized\nlatest\nlatestmajor\ndefault\npreview");
+					return;
+				}
+			}
+
 			List<FileInfo> sourceFiles = result.GetValue(sourceFilesArg);
 			if (sourceFiles.Count == 0)
 			{
@@ -134,6 +151,7 @@ class Dflat
 			}
 			outputType = result.GetValue(targetsOption);
 			if (result.GetValue(platformOption) != null) cscExtraArgs.Add($"/platform:{result.GetValue(platformOption).ToString()}");
+
 			if (result.GetValue(optimizeFlag)) { cscExtraArgs.Add("/O"); ilcExtraArgs.Add("--optimize"); }
 			if (result.GetValue(entryPoint) != null) { cscExtraArgs.Add($"/main:{result.GetValue(entryPoint)}"); }
 			if (result.GetValue(justILFlag)) { justIL = true; }
@@ -382,15 +400,6 @@ class CustomVersionAction : SynchronousCommandLineAction
 	}
 }
 
-class LangversionAction : SynchronousCommandLineAction
-{
-	public override int Invoke(ParseResult ps)
-	{
-		Dflat.CallCompiler(Dflat.csc, "/langversion:?");
-		return 0;
-	}
-}
-
 enum CSCTargets
 {
 	EXE,
@@ -408,3 +417,4 @@ enum CSCPlatforms
 	anycpu32bitpreferred,
 	anycpu
 }
+
