@@ -188,6 +188,7 @@ class Dflat
 			exe = outputType switch
 			{
 				CSCTargets.EXE => Path.Join(cwd, $"{program}.exe"),
+				CSCTargets.WINEXE => Path.Join(cwd, $"{program}.exe"),
 				CSCTargets.LIBRARY => Path.Join(cwd, $"{program}.dll"),
 			};
 		}
@@ -306,6 +307,7 @@ class Dflat
 		argString += $" --feature:System.Linq.Expressions.CanEmitObjectArrayDelegate=false";
 		argString += $" --feature:System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false";
 		argString += $" --feature:System.Globalization.Invariant=true";
+		//argString += $" --feature:System.Globalization.Invariant=false";
 		argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
 		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
 
@@ -326,11 +328,17 @@ class Dflat
 	static bool Link(List<string> args)
 	{
 		Log("Linking...");
-		string argString = $"{obj} /out:{exe} /nodefaultlib /subsystem:console /nologo";
+		string argString = $"{obj} /out:{exe} /nodefaultlib /nologo";
 		argString += outputType switch
 		{
 			CSCTargets.EXE => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
+			CSCTargets.WINEXE => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
 			CSCTargets.LIBRARY => $" \"{Path.Join(aotsdk, "bootstrapperdll.obj")}\"",
+		};
+		argString += outputType switch
+		{
+			CSCTargets.EXE => $" /subsystem:console",
+			CSCTargets.WINEXE => $" /subsystem:windows /entry:wmainCRTStartup",
 		};
 		argString += $" \"{Path.Join(aotsdk, "dllmain.obj")}\"";
 		argString += $" \"{Path.Join(aotsdk, "Runtime.ServerGC.lib")}\"";
