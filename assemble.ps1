@@ -13,7 +13,7 @@ git clone --depth 1 -b main https://github.com/dotnet/roslyn
 rm roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 cp .github\diffs\csc.csproj roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 roslyn\restore.cmd
-roslyn\.dotnet\dotnet.exe publish roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj --framework net10.0
+roslyn\.dotnet\dotnet.exe publish roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 cp roslyn\artifacts\bin\csc\Release\net*\win-x64\publish\csc.exe build\csc\csc.exe
 
 # build ilc, runtime, libs (dotnet\runtime)
