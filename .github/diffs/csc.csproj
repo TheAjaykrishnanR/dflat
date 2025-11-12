@@ -3,7 +3,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <UseAppHost>true</UseAppHost>
     <IsSymbolPublishingPackage>true</IsSymbolPublishingPackage>
     <SelfContained>true</SelfContained>
@@ -14,7 +14,7 @@
   
   <!-- Can't put this in shared project due to https://github.com/dotnet/project-system/issues/8157 -->
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)..\csc.rsp" Condition="'$(TargetFramework)' == 'net9.0'">
+    <None Include="$(MSBuildThisFileDirectory)..\csc.rsp" Condition="'$(TargetFramework)' == 'net10.0'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
