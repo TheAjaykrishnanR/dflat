@@ -54,7 +54,7 @@ $obj = "$program.obj"
 	--directpinvokelist:"$cwd\libs\WindowsAPIs.txt" `
 	--directpinvoke:System.Globalization.Native `
 	--directpinvoke:System.IO.Compression.Native `
-	--mstat "$program.mstat" # for size analysis
+	# --mstat "$program.mstat" # for size analysis
 
 $kits = "$cwd\libs\kits"
 $msvc = "$cwd\libs\msvc"
