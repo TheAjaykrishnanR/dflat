@@ -280,17 +280,13 @@ class Dflat
 		return exists;
 	}
 
-
-
 	static bool ILCompile(List<string> args)
 	{
 		Log("ILCompile...");
 		string argString = $"{ilexe} --out:{obj}";
 		argString += $" -r:\"{Path.Join(aotsdk, "*.dll")}\"";
 		argString += $" -r:\"{Path.Join(runtime, "*.dll")}\"";
-		argString += $" -g";
 		argString += $" --generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN";
-		argString += $" --dehydrate";
 		argString += $" --initassembly:System.Private.CoreLib";
 		argString += $" --initassembly:System.Private.StackTraceMetadata";
 		argString += $" --initassembly:System.Private.TypeLoader";
@@ -298,18 +294,18 @@ class Dflat
 		argString += $" --directpinvokelist:\"{Path.Join(home, @"libs\WindowsAPIs.txt")}\"";
 		argString += $" --directpinvoke:System.Globalization.Native";
 		argString += $" --directpinvoke:System.IO.Compression.Native";
+		argString += $" -O"; // optimize
+		argString += $" -g";
+		argString += $" --dehydrate";
 		argString += $" --stacktracedata";
 		argString += $" --scanreflection";
-		//
-		argString += $" --feature:System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization=false";
+		// furthur optimizations
+		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
 		argString += $" --feature:System.Diagnostics.Tracing.EventSource.IsSupported=false";
 		argString += $" --feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false";
 		argString += $" --feature:System.Linq.Expressions.CanEmitObjectArrayDelegate=false";
-		argString += $" --feature:System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false";
 		argString += $" --feature:System.Globalization.Invariant=true";
-		//argString += $" --feature:System.Globalization.Invariant=false";
 		argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
-		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
 
 		foreach (string dll in externalLibs)
 		{
@@ -382,7 +378,6 @@ class Dflat
 		argString += $" \"{Path.Join(msvc, "msvcprt.lib")}\"";
 		argString += $" \"{Path.Join(msvc, "vcruntime.lib")}\"";
 		argString += $" \"{Path.Join(msvc, "oldnames.lib")}\"";
-
 
 		foreach (string arg in args)
 		{

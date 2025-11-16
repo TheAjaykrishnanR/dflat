@@ -35,6 +35,7 @@ $obj = "$program.obj"
 	-r:"$aotsdk\*.dll" `
 	-r:"$cwd\libs\runtime\*.dll" `
 	-r:"$cwd\libs\extras\*.dll" `
+	-O `
 	-g `
 	--generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN `
 	--dehydrate `
@@ -44,17 +45,16 @@ $obj = "$program.obj"
 	--initassembly:System.Private.Reflection.Execution `
 	--stacktracedata `
 	--scanreflection `
-	--feature:System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization=false `
 	--feature:System.Diagnostics.Tracing.EventSource.IsSupported=false `
 	--feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false `
 	--feature:System.Linq.Expressions.CanEmitObjectArrayDelegate=false `
-	--feature:System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false `
 	--feature:System.Globalization.Invariant=true `
 	--feature:System.Diagnostics.Debugger.IsSupported=false `
 	--feature:System.StartupHookProvider.IsSupported=false `
 	--directpinvokelist:"$cwd\libs\WindowsAPIs.txt" `
 	--directpinvoke:System.Globalization.Native `
-	--directpinvoke:System.IO.Compression.Native 
+	--directpinvoke:System.IO.Compression.Native `
+	--mstat "$program.mstat" # for size analysis
 
 $kits = "$cwd\libs\kits"
 $msvc = "$cwd\libs\msvc"
