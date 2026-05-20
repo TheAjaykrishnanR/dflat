@@ -11,8 +11,8 @@ using System.CommandLine.Invocation;
 
 class Dflat
 {
-	public static string home = new FileInfo(Environment.ProcessPath).Directory.FullName;
-	public static string cwd = Directory.GetCurrentDirectory();
+	public static string home = new FileInfo(Environment.ProcessPath).Directory.FullName; // where dflat lives
+	public static string cwd = Directory.GetCurrentDirectory(); // from where dflat is invoked
 	public static string csc = Path.Join(home, @"csc\csc.exe");
 	public static string ilc = Path.Join(home, @"ilc\ilc.exe");
 	public static string linker = Path.Join(home, @"linker\link.exe");
@@ -27,27 +27,30 @@ class Dflat
 	static string cscExtraArgString = "", ilcExtraArgString = "", lldExtraArgString = "";
 
 	static string NORMAL = "\x1b[39m";
-	static string RED = "\x1b[91m";
-	static string GREEN = "\x1b[92m";
+	static Dictionary<string, string> COLORS = new()
+	{
+		{ "RED", "\x1b[91m" },
+		{ "GREEN", "\x1b[92m" },
+	};
 
 	static void Main(string[] args)
 	{
 		// check compilers
-		if (!File.Exists(csc)) throw new Exception($"{csc} not found");
-		if (!File.Exists(ilc)) throw new Exception($"{ilc} not found");
-		if (!File.Exists(linker)) throw new Exception($"{linker} not found");
+		if (!File.Exists(csc)) { Print($"{csc} not found", "RED"); return; }
+		if (!File.Exists(ilc)) { Print($"{ilc} not found"); return; }
+		if (!File.Exists(linker)) { Print($"{linker} not found"); return; }
 
 		// check refs + runtime assemblies + aotsdk
-		if (!Directory.Exists(aotsdk)) throw new Exception($"{aotsdk} not found");
-		if (!Directory.Exists(refs)) throw new Exception($"{refs} not found");
-		if (!Directory.Exists(runtime)) throw new Exception($"{runtime} not found");
-		if (!Directory.Exists(kits)) throw new Exception($"{kits} not found");
-		if (!Directory.Exists(msvc)) throw new Exception($"{msvc} not found");
+		if (!Directory.Exists(aotsdk)) { Print($"{aotsdk} not found"); return; }
+		if (!Directory.Exists(refs)) { Print($"{refs} not found"); return; }
+		if (!Directory.Exists(runtime)) { Print($"{runtime} not found"); return; }
+		if (!Directory.Exists(kits)) { Print($"{kits} not found"); return; }
+		if (!Directory.Exists(msvc)) { Print($"{msvc} not found"); return; }
 
 		Argument<List<FileInfo>> sourceFilesArg = new("SOURCE FILES") { Description = ".cs files to compile", };
 		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
 		Option<string[]> externalLibsOption = new("/r") { Description = "Additional reference .dlls or folders containing them", };
-		Option<bool> verbosity = new("/verbosity") { Description = "Set verbosity", };
+		Option<bool> verbosity = new("/verbose") { Description = "Set verbosity", };
 		Option<string> outputArg = new("/out") { Description = "Output file name", };
 		Option<string> entryPoint = new("/main") { Description = "Specify the class containing Main()", };
 		Option<string> langversion = new("/langversion") { Description = "Specify lang version, /langversion:? to list all available versions", };
@@ -114,7 +117,7 @@ class Dflat
 			List<FileInfo> sourceFiles = result.GetValue(sourceFilesArg);
 			if (sourceFiles.Count == 0)
 			{
-				Console.WriteLine($"{RED}No source files supplied{NORMAL}");
+				Print($"No source files supplied", "RED");
 				defaultHelpAction.Invoke(result);
 				return;
 			}
@@ -165,10 +168,11 @@ class Dflat
 	}
 
 	static string tmpDir = Path.Join(cwd, ".dflat.tmp");
-	static string program;
-	static string ilexe;
-	static string obj;
-	static string exe;
+	static string outName; // name emitted output entity
+	static string ilOut;
+	static string objOut;
+	static string outDir;
+	static string outPath; // output path
 
 	// export definitions created by ILC for linker
 	static string def;
@@ -179,27 +183,63 @@ class Dflat
 	static void Compile(List<FileInfo> sourceFiles, string? exeOut, List<string> cscExtraArgs, List<string> ilcExtraArgs)
 	{
 		// set paths
-		program = exeOut == null ? sourceFiles.First().Name.Replace(".cs", "") : exeOut.Replace(".exe", "");
+		outName = sourceFiles.First().Name.Replace(".cs", "");
+		outDir = cwd;
+
+		if (exeOut != null)
+		{
+			// remove trailing "\"s if any
+			while (exeOut.EndsWith(@"\"))
+			{
+				exeOut = exeOut.Remove(exeOut.Length - 1);
+			}
+
+			if (exeOut.Contains("/"))
+			{
+				Print("Only windows style paths supported", "RED");
+				return;
+			}
+
+			if (exeOut.Contains(@"\") || Directory.Exists(Path.Join(cwd, exeOut)))
+			{ // is path
+				string[] parts = exeOut.Split(@"\");
+				string parent = exeOut.Replace(parts.Last(), ""); // exeOut with the last part removed
+				if (Directory.Exists(exeOut))
+				{
+					outDir = exeOut;
+				}
+				else if (Directory.Exists(parent))
+				{
+					outName = parts.Last().Replace(".exe", "");
+					outDir = parent;
+				}
+			}
+			else
+			{
+				outName = exeOut.Replace(".exe", "");
+			}
+		}
+
 		if (!justIL)
 		{
 			Directory.CreateDirectory(tmpDir);
-			ilexe = Path.Join(tmpDir, $"{program}.il.exe");
-			obj = Path.Join(tmpDir, $"{program}.obj");
-			exe = outputType switch
+			ilOut = Path.Join(tmpDir, $"{outName}.il.out");
+			objOut = Path.Join(tmpDir, $"{outName}.obj");
+			outPath = outputType switch
 			{
-				CSCTargets.EXE => Path.Join(cwd, $"{program}.exe"),
-				CSCTargets.WINEXE => Path.Join(cwd, $"{program}.exe"),
-				CSCTargets.LIBRARY => Path.Join(cwd, $"{program}.dll"),
+				CSCTargets.EXE => Path.Join(outDir, $"{outName}.exe"),
+				CSCTargets.WINEXE => Path.Join(outDir, $"{outName}.exe"),
+				CSCTargets.LIBRARY => Path.Join(outDir, $"{outName}.dll"),
 			};
 		}
 		else
 		{
-			ilexe = Path.Join(cwd, $"{program}.il.exe");
+			ilOut = Path.Join(outDir, $"{outName}.il.out");
 		}
 
 		if (outputType == CSCTargets.LIBRARY)
 		{
-			def = Path.Join(tmpDir, $"{program}.def");
+			def = Path.Join(tmpDir, $"{outName}.def");
 			cscExtraArgs.Add($"/target:library");
 			ilcExtraArgs.AddRange(["--nativelib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
 			linkerExraArgs.AddRange(["/dll", $"/def:{def}", "/noimplib"]);
@@ -214,13 +254,28 @@ class Dflat
 		Finish();
 	}
 
+	static void Print(string message, string? color = null, int[]? rgb = null)
+	{
+		string code;
+		if (color != null)
+		{
+			COLORS.TryGetValue(color.ToUpper(), out string colorCode);
+			code = colorCode == null ? NORMAL : colorCode;
+			Console.Error.WriteLine($"{code}{message}{NORMAL}");
+			return;
+		}
+		if (rgb.Length != 3) return;
+		string rgbCode = $"\x1b[38;2;{rgb[0]};{rgb[1]};{rgb[2]}m";
+		Console.Error.WriteLine($"{rgbCode}{message}{NORMAL}");
+	}
+
 	static bool HandleError(bool result)
 	{
 		if (!result)
 		{
 			sw.Stop();
 			if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
-			Console.Error.WriteLine($"{RED}Compilation failed{NORMAL}");
+			Print($"Compilation failed", "RED");
 		}
 		return result;
 	}
@@ -228,14 +283,14 @@ class Dflat
 	static void Finish()
 	{
 		sw.Stop();
-		Console.WriteLine($"{GREEN}Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {exe}{NORMAL}");
+		Print($"Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {outPath}", "GREEN");
 		if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
 	}
 
 	static bool verbose = false;
 	static void Log(string text)
 	{
-		if (verbose) Console.WriteLine(text);
+		if (verbose) Print(text, rgb: [100, 100, 100]);
 	}
 
 	public static void CallCompiler(string compiler, string argString)
@@ -256,7 +311,7 @@ class Dflat
 	static bool CscCompile(List<FileInfo> sourceFiles, List<string> args)
 	{
 		Log("CSCCompile...");
-		string argString = $"/noconfig /out:{ilexe} /nologo /nostdlib /nosdkpath /unsafe";
+		string argString = $"/noconfig /out:{ilOut} /nologo /nostdlib /nosdkpath /unsafe";
 		foreach (FileInfo sourceFile in sourceFiles)
 		{
 			argString += $" \"{sourceFile.FullName}\"";
@@ -276,14 +331,14 @@ class Dflat
 		argString += $" {cscExtraArgString}";
 		Log(argString);
 		CallCompiler(csc, argString);
-		var exists = File.Exists(ilexe);
+		var exists = File.Exists(ilOut);
 		return exists;
 	}
 
 	static bool ILCompile(List<string> args)
 	{
 		Log("ILCompile...");
-		string argString = $"{ilexe} --out:{obj}";
+		string argString = $"{ilOut} --out:{objOut}";
 		argString += $" -r:\"{Path.Join(aotsdk, "*.dll")}\"";
 		argString += $" -r:\"{Path.Join(runtime, "*.dll")}\"";
 		argString += $" --generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN";
@@ -318,13 +373,13 @@ class Dflat
 		argString += $" {ilcExtraArgString}";
 		Log(argString);
 		CallCompiler(ilc, argString);
-		return File.Exists(obj);
+		return File.Exists(objOut);
 	}
 
 	static bool Link(List<string> args)
 	{
 		Log("Linking...");
-		string argString = $"{obj} /out:{exe} /nodefaultlib /nologo";
+		string argString = $"{objOut} /out:{outPath} /nodefaultlib /nologo";
 		argString += outputType switch
 		{
 			CSCTargets.EXE => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
@@ -386,7 +441,7 @@ class Dflat
 		argString += $" {lldExtraArgString}";
 		Log(argString);
 		CallCompiler(linker, argString);
-		return File.Exists(exe);
+		return File.Exists(outPath);
 	}
 }
 
@@ -420,4 +475,3 @@ enum CSCPlatforms
 	anycpu32bitpreferred,
 	anycpu
 }
-
