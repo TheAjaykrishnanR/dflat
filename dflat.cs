@@ -390,6 +390,7 @@ class Dflat
 		{
 			CSCTargets.EXE => $" /subsystem:console",
 			CSCTargets.WINEXE => $" /subsystem:windows /entry:wmainCRTStartup",
+			_ => ""
 		};
 		argString += $" \"{Path.Join(aotsdk, "dllmain.obj")}\"";
 		argString += $" \"{Path.Join(aotsdk, "Runtime.ServerGC.lib")}\"";
