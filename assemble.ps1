@@ -9,7 +9,7 @@ mkdir -p build\libs\kits
 mkdir -p build\libs\msvc
 
 # build csc (dotnet\roslyn)
-git clone --depth 1 -b main https://github.com/dotnet/roslyn 
+git clone --depth 1 -b v11.0.100 https://github.com/dotnet/roslyn 
 rm roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 cp .github\diffs\csc.csproj roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 roslyn\restore.cmd
