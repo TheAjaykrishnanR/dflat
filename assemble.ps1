@@ -17,7 +17,7 @@ roslyn\.dotnet\dotnet.exe publish roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csp
 cp roslyn\artifacts\bin\csc\Release\net*\win-x64\publish\csc.exe build\csc\csc.exe
 
 # build ilc, runtime, libs (dotnet\runtime)
-git clone --depth 1 -b main https://github.com/dotnet/runtime
+git clone --depth 1 -b v11.0.0-preview.6.26359.118 https://github.com/dotnet/runtime
 runtime\build.cmd clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -rc Release -lc Release
 $coreclr = "runtime\artifacts\bin\coreclr\windows.x64.Release\"
 cp "$coreclr\aotsdk\*" build\libs\aotsdk\
