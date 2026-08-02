@@ -4,7 +4,7 @@
 
 <br/>
 <p align="center">
-    <img src="https://github.com/TheAjaykrishnanR/dflat/blob/master/imgs/WindowsTerminal_IMA1T6cL6n.gif"/>
+    <img src="https://github.com/TheAjaykrishnanR/dflat/blob/master/imgs/demo.gif"/>
 </p>
 
 ### Usage
