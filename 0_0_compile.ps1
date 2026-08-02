@@ -43,7 +43,7 @@ $obj = "$program.obj"
 	--initassembly:System.Private.StackTraceMetadata `
 	--initassembly:System.Private.TypeLoader `
 	--initassembly:System.Private.Reflection.Execution `
-	--stacktracedata `
+	--stacktracedata frames `
 	--scanreflection `
 	--feature:System.Diagnostics.Tracing.EventSource.IsSupported=false `
 	--feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false `
@@ -84,6 +84,7 @@ $msvc = "$cwd\libs\msvc"
 	"$msvc\vcruntime.lib" `
 	"$msvc\oldnames.lib" `
 	"$kits\ucrt.lib" `
+	"$kits\synchronization.lib" `
 	/subsystem:console `
 	"/out:$program.exe" `
 	/nodefaultlib `

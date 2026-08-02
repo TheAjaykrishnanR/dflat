@@ -6,3 +6,12 @@
 *.pdb
 *.rsp
 *.mstat
+build
+roslyn
+runtime
+csc
+ilc
+linker
+msvc
+downloads
+System.CommandLine

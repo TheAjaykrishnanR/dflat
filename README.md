@@ -98,5 +98,21 @@ A slight modification is made to the `csc.csproj` file so that csc itself is aot
 
 `linker`: On Windows we go with the native MSVC `link.exe` and on Linux we use the native `ld.bfd` linker part of gnu binutils.
 
+## Win32
+
+- advapi32
+- bcrypt
+- crypt32
+- iphlpapi
+- kernel32
+- mswsock
+- ncrypt
+- ntdll
+- ole32
+- oleaut32
+- secur32
+- version
+- ws2_32
+- user32
 
 

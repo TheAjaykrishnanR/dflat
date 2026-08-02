@@ -352,7 +352,7 @@ class Dflat
 		argString += $" -O"; // optimize
 		argString += $" -g";
 		argString += $" --dehydrate";
-		argString += $" --stacktracedata";
+		argString += $" --stacktracedata frames";
 		argString += $" --scanreflection";
 		// furthur optimizations
 		argString += $" --feature:System.StartupHookProvider.IsSupported=false";

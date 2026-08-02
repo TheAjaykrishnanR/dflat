@@ -15,7 +15,7 @@ jobs:
     - name: Run assemble script
       run: | 
         chmod +x assemble-linux.sh
-        ./assemble-linux.sh
+        ./3_0_download_build_assemble_linux.sh
       shell: bash
     - name: Get latest release tag
       id: latest_release

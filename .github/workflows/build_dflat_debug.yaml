@@ -13,7 +13,7 @@ jobs:
         limit-access-to-actor: true
         detached: true
     - name: Run assemble script
-      run: .\assemble.ps1
+      run: .\1_0_download_build_assemble.ps1
       shell: pwsh
     - uses: ncipollo/release-action@v1
       with:

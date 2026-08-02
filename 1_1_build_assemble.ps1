@@ -9,7 +9,7 @@ mkdir -p build\libs\kits
 mkdir -p build\libs\msvc
 
 # build csc (dotnet\roslyn)
-git clone --depth 1 -b v11.0.100 https://github.com/dotnet/roslyn 
+# git clone --depth 1 -b main https://github.com/dotnet/roslyn 
 rm roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 cp .github\diffs\csc.csproj roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csproj
 roslyn\restore.cmd
@@ -17,7 +17,7 @@ roslyn\.dotnet\dotnet.exe publish roslyn\src\Compilers\CSharp\csc\AnyCpu\csc.csp
 cp roslyn\artifacts\bin\csc\Release\net*\win-x64\publish\csc.exe build\csc\csc.exe
 
 # build ilc, runtime, libs (dotnet\runtime)
-git clone --depth 1 -b v11.0.0-preview.6.26359.118 https://github.com/dotnet/runtime
+# git clone --depth 1 -b main https://github.com/dotnet/runtime
 runtime\build.cmd clr.nativeaotlibs+clr.nativeaotruntime+clr.alljits+clr.tools+libs -rc Release -lc Release
 $coreclr = "runtime\artifacts\bin\coreclr\windows.x64.Release\"
 cp "$coreclr\aotsdk\*" build\libs\aotsdk\
@@ -36,17 +36,11 @@ Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*.pdb"
 Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*unix*"
 Remove-Item -Recurse -Force -Confirm:$false "build\ilc\*universal*"
 
-# lld-link (llvm)
-# curl -Lo llvm.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-pc-windows-msvc.tar.xz
-# mkdir llvm
-# & "C:\Program Files\Git\usr\bin\tar.exe" -xvf llvm.tar.xz -C llvm
-# cp llvm\*\bin\lld-link.exe build\linker\lld-link.exe
-
 # kits (Windows SDK)
 $kitlibs = @("advapi32", "bcrypt", "crypt32", "d3d11", "dxgi", "gdi32", "iphlpapi", "kernel32", "mswsock", "ncrypt", "ntdll", "ole32", "oleaut32", "secur32", "user32", "uuid", "version", "ws2_32")
 $msvclibs = @("libcmt", "msvcprt", "vcruntime", "oldnames")
-curl -Lo ms-downloader.py https://gist.github.com/TheAjaykrishnanR/1ed9254e7bf20bfbabb667124e331d21/raw/b3f026554d2a646a28c0a74dd24dbd4a6f15eb2f/portable-msvc.py 
-python ms-downloader.py --sdk-version 26100
+# curl -Lo ms-downloader.py https://gist.github.com/TheAjaykrishnanR/1ed9254e7bf20bfbabb667124e331d21/raw/b3f026554d2a646a28c0a74dd24dbd4a6f15eb2f/portable-msvc.py 
+# python ms-downloader.py --sdk-version 26100
 foreach($name in $kitlibs) {
 	& "C:\Program Files\Git\usr\bin\cp.exe" "msvc\Windows Kits\10\Lib\10.0.26100.0\um\x64\$name.lib" build\libs\kits\$name.lib
 }
@@ -63,11 +57,11 @@ foreach($file in $linkerdeps) {
 }
 
 # compile dflat.cs
-curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
-mv System.CommandLine.nupkg System.CommandLine.zip
-Expand-Archive System.CommandLine.zip
+# curl -Lo System.CommandLine.nupkg https://www.nuget.org/api/v2/package/System.CommandLine/2.0.0-beta6.25358.103
+# mv System.CommandLine.nupkg System.CommandLine.zip
+# Expand-Archive System.CommandLine.zip
 & "C:\Program Files\Git\usr\bin\cp.exe" "System.CommandLine/lib/net8.0/System.CommandLine.dll" "build/libs/extras/System.CommandLine.dll"
-cp compile.ps1 build\compile.ps1
+cp 0_0_compile.ps1 build\compile.ps1
 cp dflat.cs build\dflat.cs
 cd build
 .\compile.ps1 dflat.cs
@@ -77,4 +71,5 @@ Remove-Item -Recurse -Force -Confirm:$false .\libs\extras
 cd ..
 
 # pack
-Compress-Archive .\build\* dflat-win-x64.zip
+$ver = $args[1]
+Compress-Archive .\build\* "dflat-win-x64-v$ver.zip"
