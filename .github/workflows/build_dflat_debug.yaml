@@ -6,7 +6,6 @@ jobs:
     name: Run Script
     runs-on: windows-latest
     steps:
-    steps:
     - uses: actions/checkout@v2
     - name: Setup upterm session
       uses: owenthereal/action-upterm@v1 
