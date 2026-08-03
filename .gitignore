@@ -6,6 +6,7 @@
 *.pdb
 *.rsp
 *.mstat
+*.zip
 build
 roslyn
 runtime
