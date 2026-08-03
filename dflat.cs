@@ -420,6 +420,7 @@ class Dflat
 		argString += $" \"{Path.Join(kits, "uuid.lib")}\"";
 		argString += $" \"{Path.Join(kits, "version.lib")}\"";
 		argString += $" \"{Path.Join(kits, "ws2_32.lib")}\"";
+		argString += $" \"{Path.Join(kits, "synchronization.lib")}\"";
 
 		///<summary>
 		///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
