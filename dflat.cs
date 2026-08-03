@@ -11,6 +11,8 @@ using System.CommandLine.Invocation;
 
 class Dflat
 {
+	public static string version = "0.1.0";
+
 	public static string home = new FileInfo(Environment.ProcessPath).Directory.FullName; // where dflat lives
 	public static string cwd = Directory.GetCurrentDirectory(); // from where dflat is invoked
 	public static string csc = Path.Join(home, @"csc\csc.exe");
@@ -60,7 +62,7 @@ class Dflat
 		Option<string> cscArgStringOption = new("/csc") { Description = "extra csc flags [as a single string]", };
 		Option<string> ilcArgStringOption = new("/ilc") { Description = "extra ilc flags [as a single string]", };
 		Option<string> lldArgStringOption = new("/lld") { Description = "extra lld flags [as a single string]", };
-		RootCommand cmd = new("dflat, a native aot compiler for c#\nAjaykrishnan R, 2025") {
+		RootCommand cmd = new($"dflat, a native aot compiler for c#\nAjaykrishnan R, 2025\nversion: {version}") {
 			sourceFilesArg,
 			outputArg,
 			entryPoint,
@@ -451,6 +453,7 @@ class CustomVersionAction : SynchronousCommandLineAction
 {
 	public override int Invoke(ParseResult ps)
 	{
+		Console.WriteLine($"v{Dflat.version}");
 		Console.Write($"CSC: ");
 		Dflat.CallCompiler(Dflat.csc, "/version");
 		Console.Write($"ILC: ");
