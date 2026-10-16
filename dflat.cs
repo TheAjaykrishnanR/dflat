@@ -246,8 +246,9 @@ class Dflat
         sw.Start();
         if (!HandleError(CscCompile(sourceFiles, cscExtraArgs))) return;
         if (outputType == CSCTargets.lib) {
-            File.Replace(ilOut, outPath, null);
-            Finish(); return; 
+            if(File.Exists(outPath)) File.Replace(ilOut, outPath, null);
+            else File.Move(ilOut, outPath);
+            Finish(); return;
         }
         if (!HandleError(ILCompile(ilcExtraArgs))) return;
         if (!HandleError(Link(linkerExraArgs))) return;
