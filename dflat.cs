@@ -209,13 +209,13 @@ class Dflat
                 }
                 else if (Directory.Exists(parent))
                 {
-                    outName = parts.Last().Replace(".exe", "");
+                    outName = parts.Last().Replace(".exe", "").Replace(".dll", "");
                     outDir = parent;
                 }
             }
             else
             {
-                outName = exeOut.Replace(".exe", "");
+                outName = exeOut.Replace(".exe", "").Replace(".dll", "");
             }
         }
 
