@@ -11,472 +11,472 @@ using System.CommandLine.Invocation;
 
 class Dflat
 {
-	public static string version = "0.1.0";
+    public static string version = "0.1.0";
 
-	public static string home = new FileInfo(Environment.ProcessPath).Directory.FullName; // where dflat lives
-	public static string cwd = Directory.GetCurrentDirectory(); // from where dflat is invoked
-	public static string csc = Path.Join(home, @"csc\csc.exe");
-	public static string ilc = Path.Join(home, @"ilc\ilc.exe");
-	public static string linker = Path.Join(home, @"linker\link.exe");
-	public static string aotsdk = Path.Join(home, @"libs\aotsdk");
-	public static string refs = Path.Join(home, @"libs\refs");
-	public static string runtime = Path.Join(home, @"libs\runtime");
-	public static string kits = Path.Join(home, @"libs\kits");
-	public static string msvc = Path.Join(home, @"libs\msvc");
+    public static string home = new FileInfo(Environment.ProcessPath).Directory.FullName; // where dflat lives
+    public static string cwd = Directory.GetCurrentDirectory(); // from where dflat is invoked
+    public static string csc = Path.Join(home, @"csc\csc.exe");
+    public static string ilc = Path.Join(home, @"ilc\ilc.exe");
+    public static string linker = Path.Join(home, @"linker\link.exe");
+    public static string aotsdk = Path.Join(home, @"libs\aotsdk");
+    public static string refs = Path.Join(home, @"libs\refs");
+    public static string runtime = Path.Join(home, @"libs\runtime");
+    public static string kits = Path.Join(home, @"libs\kits");
+    public static string msvc = Path.Join(home, @"libs\msvc");
 
-	static List<string> externalLibs = new();
-	static List<string> cscExtraArgs = new(), ilcExtraArgs = new(), linkerExraArgs = new();
-	static string cscExtraArgString = "", ilcExtraArgString = "", lldExtraArgString = "";
+    static List<string> externalLibs = new();
+    static List<string> cscExtraArgs = new(), ilcExtraArgs = new(), linkerExraArgs = new();
+    static string cscExtraArgString = "", ilcExtraArgString = "", lldExtraArgString = "";
 
-	static string NORMAL = "\x1b[39m";
-	static Dictionary<string, string> COLORS = new()
-	{
-		{ "RED", "\x1b[91m" },
-		{ "GREEN", "\x1b[92m" },
-	};
+    static string NORMAL = "\x1b[39m";
+    static Dictionary<string, string> COLORS = new()
+    {
+        { "RED", "\x1b[91m" },
+        { "GREEN", "\x1b[92m" },
+    };
 
-	static void Main(string[] args)
-	{
-		// check compilers
-		if (!File.Exists(csc)) { Print($"{csc} not found", "RED"); return; }
-		if (!File.Exists(ilc)) { Print($"{ilc} not found"); return; }
-		if (!File.Exists(linker)) { Print($"{linker} not found"); return; }
+    static void Main(string[] args)
+    {
+        // check compilers
+        if (!File.Exists(csc)) { Print($"{csc} not found", "RED"); return; }
+        if (!File.Exists(ilc)) { Print($"{ilc} not found"); return; }
+        if (!File.Exists(linker)) { Print($"{linker} not found"); return; }
 
-		// check refs + runtime assemblies + aotsdk
-		if (!Directory.Exists(aotsdk)) { Print($"{aotsdk} not found"); return; }
-		if (!Directory.Exists(refs)) { Print($"{refs} not found"); return; }
-		if (!Directory.Exists(runtime)) { Print($"{runtime} not found"); return; }
-		if (!Directory.Exists(kits)) { Print($"{kits} not found"); return; }
-		if (!Directory.Exists(msvc)) { Print($"{msvc} not found"); return; }
+        // check refs + runtime assemblies + aotsdk
+        if (!Directory.Exists(aotsdk)) { Print($"{aotsdk} not found"); return; }
+        if (!Directory.Exists(refs)) { Print($"{refs} not found"); return; }
+        if (!Directory.Exists(runtime)) { Print($"{runtime} not found"); return; }
+        if (!Directory.Exists(kits)) { Print($"{kits} not found"); return; }
+        if (!Directory.Exists(msvc)) { Print($"{msvc} not found"); return; }
 
-		Argument<List<FileInfo>> sourceFilesArg = new("SOURCE FILES") { Description = ".cs files to compile", };
-		Option<bool> justILFlag = new("/il") { Description = "Compile to IL", };
-		Option<string[]> externalLibsOption = new("/r") { Description = "Additional reference .dlls or folders containing them", };
-		Option<bool> verbosity = new("/verbose") { Description = "Set verbosity", };
-		Option<string> outputArg = new("/out") { Description = "Output file name", };
-		Option<string> entryPoint = new("/main") { Description = "Specify the class containing Main()", };
-		Option<string> langversion = new("/langversion") { Description = "Specify lang version, /langversion:? to list all available versions", };
-		Option<CSCTargets> targetsOption = new("/target") { Description = "Specify the target", };
-		Option<CSCPlatforms> platformOption = new("/platform") { Description = "Specify the platform", };
-		Option<bool> optimizeFlag = new("/optimize") { Description = "optimize", };
-		Option<string> cscArgStringOption = new("/csc") { Description = "extra csc flags [as a single string]", };
-		Option<string> ilcArgStringOption = new("/ilc") { Description = "extra ilc flags [as a single string]", };
-		Option<string> lldArgStringOption = new("/lld") { Description = "extra lld flags [as a single string]", };
-		RootCommand cmd = new($"dflat, a native aot compiler for c#\nAjaykrishnan R, 2025\nversion: {version}") {
-			sourceFilesArg,
-			outputArg,
-			entryPoint,
-			externalLibsOption,
-			justILFlag,
-			verbosity,
-			langversion,
-			targetsOption,
-			platformOption,
-			optimizeFlag,
-			cscArgStringOption,
-			ilcArgStringOption,
-			lldArgStringOption
-		};
-		// override defaults
-		HelpAction defaultHelpAction = null;
-		for (int i = 0; i < cmd.Options.Count; i++)
-		{
-			if (cmd.Options[i].GetType() == typeof(VersionOption))
-			{
-				VersionOption vo = new("/version", []);
-				vo.Action = new CustomVersionAction();
-				cmd.Options[i] = vo;
-			}
-			if (cmd.Options[i].GetType() == typeof(HelpOption))
-			{
-				defaultHelpAction = (HelpAction)cmd.Options[i].Action;
-				HelpOption ho = new("/h", ["/?", "/help"]);
-				ho.Action = defaultHelpAction;
-				cmd.Options[i] = ho;
-			}
-		}
+        Argument<List<FileInfo>> sourceFilesArg = new("SOURCE FILES") { Description = ".cs files to compile", };
+        Option<string[]> externalLibsOption = new("/r") { Description = "Additional reference .dlls or folders containing them", };
+        Option<bool> verbosity = new("/verbose") { Description = "Set verbosity", };
+        Option<string> outputArg = new("/out") { Description = "Output file name", };
+        Option<string> entryPoint = new("/main") { Description = "Specify the class containing Main()", };
+        Option<string> langversion = new("/langversion") { Description = "Specify lang version, /langversion:? to list all available versions", };
+        Option<CSCTargets> targetsOption = new("/target") { Description = "Specify the target", };
+        Option<CSCPlatforms> platformOption = new("/platform") { Description = "Specify the platform", };
+        Option<bool> optimizeFlag = new("/optimize") { Description = "optimize", };
+        Option<string> cscArgStringOption = new("/csc") { Description = "extra csc flags [as a single string]", };
+        Option<string> ilcArgStringOption = new("/ilc") { Description = "extra ilc flags [as a single string]", };
+        Option<string> lldArgStringOption = new("/lld") { Description = "extra lld flags [as a single string]", };
+        RootCommand cmd = new($"dflat, a native aot compiler for c#\nAjaykrishnan R, 2025\nversion: {version}") {
+            sourceFilesArg,
+            outputArg,
+            entryPoint,
+            externalLibsOption,
+            verbosity,
+            langversion,
+            targetsOption,
+            platformOption,
+            optimizeFlag,
+            cscArgStringOption,
+            ilcArgStringOption,
+            lldArgStringOption
+        };
+        // override defaults
+        HelpAction defaultHelpAction = null;
+        for (int i = 0; i < cmd.Options.Count; i++)
+        {
+            if (cmd.Options[i].GetType() == typeof(VersionOption))
+            {
+                VersionOption vo = new("/version", []);
+                vo.Action = new CustomVersionAction();
+                cmd.Options[i] = vo;
+            }
+            if (cmd.Options[i].GetType() == typeof(HelpOption))
+            {
+                defaultHelpAction = (HelpAction)cmd.Options[i].Action;
+                HelpOption ho = new("/h", ["/?", "/help"]);
+                ho.Action = defaultHelpAction;
+                cmd.Options[i] = ho;
+            }
+        }
 
-		cmd.SetAction(result =>
-		{
-			// handle options that are also flags first
-			if (result.GetValue(langversion) != null)
-			{
-				string ver = result.GetValue(langversion);
-				if (ver == "latest" || ver == "latestmajor" || ver == "default" || ver == "preview")
-					cscExtraArgs.Add($"/langversion:{ver}");
-				else if (ver == "?" || ver == "h")
-				{
-					CallCompiler(csc, "/langversion:?");
-					return;
-				}
-				else
-				{
-					Console.WriteLine("Language version not recognized\nlatest\nlatestmajor\ndefault\npreview");
-					return;
-				}
-			}
+        cmd.SetAction(result =>
+        {
+            // handle options that are also flags first
+            if (result.GetValue(langversion) != null)
+            {
+                string ver = result.GetValue(langversion);
+                if (ver == "latest" || ver == "latestmajor" || ver == "default" || ver == "preview")
+                    cscExtraArgs.Add($"/langversion:{ver}");
+                else if (ver == "?" || ver == "h")
+                {
+                    CallCompiler(csc, "/langversion:?");
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine("Language version not recognized\nlatest\nlatestmajor\ndefault\npreview");
+                    return;
+                }
+            }
 
-			List<FileInfo> sourceFiles = result.GetValue(sourceFilesArg);
-			if (sourceFiles.Count == 0)
-			{
-				Print($"No source files supplied", "RED");
-				defaultHelpAction.Invoke(result);
-				return;
-			}
-			foreach (FileInfo sourceFile in sourceFiles)
-			{
-				if (!sourceFile.Exists)
-				{
-					Console.Error.WriteLine($"file {sourceFile.Name} does not exist");
-					return;
-				}
-				if (!sourceFile.Name.EndsWith(".cs"))
-				{
-					Console.Error.WriteLine($"please input a .cs file");
-					return;
-				}
-			}
-			if (result.GetValue(verbosity)) { verbose = true; }
-			foreach (string path in result.GetValue(externalLibsOption))
-			{
-				if (File.GetAttributes(path).HasFlag(FileAttributes.Directory))
-				{
-					foreach (string dll in Directory.GetFiles(path).Where(file => file.EndsWith(".dll")))
-					{
-						externalLibs.Add(new FileInfo(dll).FullName);
-					}
-					continue;
-				}
-				else if (!File.Exists(path))
-				{
-					Console.Error.WriteLine($"{path} does not exist");
-					return;
-				}
-				externalLibs.Add(new FileInfo(path).FullName);
-			}
-			outputType = result.GetValue(targetsOption);
-			if (result.GetValue(platformOption) != null) cscExtraArgs.Add($"/platform:{result.GetValue(platformOption).ToString()}");
+            List<FileInfo> sourceFiles = result.GetValue(sourceFilesArg);
+            if (sourceFiles.Count == 0)
+            {
+                Print($"No source files supplied", "RED");
+                defaultHelpAction.Invoke(result);
+                return;
+            }
+            foreach (FileInfo sourceFile in sourceFiles)
+            {
+                if (!sourceFile.Exists)
+                {
+                    Console.Error.WriteLine($"file {sourceFile.Name} does not exist");
+                    return;
+                }
+                if (!sourceFile.Name.EndsWith(".cs"))
+                {
+                    Console.Error.WriteLine($"please input a .cs file");
+                    return;
+                }
+            }
+            if (result.GetValue(verbosity)) { verbose = true; }
+            foreach (string path in result.GetValue(externalLibsOption))
+            {
+                if (File.GetAttributes(path).HasFlag(FileAttributes.Directory))
+                {
+                    foreach (string dll in Directory.GetFiles(path).Where(file => file.EndsWith(".dll")))
+                    {
+                        externalLibs.Add(new FileInfo(dll).FullName);
+                    }
+                    continue;
+                }
+                else if (!File.Exists(path))
+                {
+                    Console.Error.WriteLine($"{path} does not exist");
+                    return;
+                }
+                externalLibs.Add(new FileInfo(path).FullName);
+            }
+            outputType = result.GetValue(targetsOption);
+            if (result.GetValue(platformOption) != null) cscExtraArgs.Add($"/platform:{result.GetValue(platformOption).ToString()}");
 
-			if (result.GetValue(optimizeFlag)) { cscExtraArgs.Add("/O"); ilcExtraArgs.Add("--optimize"); }
-			if (result.GetValue(entryPoint) != null) { cscExtraArgs.Add($"/main:{result.GetValue(entryPoint)}"); }
-			if (result.GetValue(justILFlag)) { justIL = true; }
-			if (result.GetValue(cscArgStringOption) != null) { cscExtraArgString = result.GetValue(cscArgStringOption); }
-			if (result.GetValue(ilcArgStringOption) != null) { ilcExtraArgString = result.GetValue(ilcArgStringOption); }
-			if (result.GetValue(lldArgStringOption) != null) { lldExtraArgString = result.GetValue(lldArgStringOption); }
-			Compile(sourceFiles, result.GetValue(outputArg), cscExtraArgs, ilcExtraArgs);
-		});
+            if (result.GetValue(optimizeFlag)) { cscExtraArgs.Add("/O"); ilcExtraArgs.Add("--optimize"); }
+            if (result.GetValue(entryPoint) != null) { cscExtraArgs.Add($"/main:{result.GetValue(entryPoint)}"); }
+            if (result.GetValue(cscArgStringOption) != null) { cscExtraArgString = result.GetValue(cscArgStringOption); }
+            if (result.GetValue(ilcArgStringOption) != null) { ilcExtraArgString = result.GetValue(ilcArgStringOption); }
+            if (result.GetValue(lldArgStringOption) != null) { lldExtraArgString = result.GetValue(lldArgStringOption); }
+            Compile(sourceFiles, result.GetValue(outputArg), cscExtraArgs, ilcExtraArgs);
+        });
 
-		cmd.Parse(args).Invoke();
-	}
+        cmd.Parse(args).Invoke();
+    }
 
-	static string tmpDir = Path.Join(cwd, ".dflat.tmp");
-	static string outName; // name emitted output entity
-	static string ilOut;
-	static string objOut;
-	static string outDir;
-	static string outPath; // output path
+    static string tmpDir = Path.Join(cwd, ".dflat.tmp");
+    static string outName; // name emitted output entity
+    static string ilOut;
+    static string objOut;
+    static string outDir;
+    static string outPath; // output path
 
-	// export definitions created by ILC for linker
-	static string def;
+    // export definitions created by ILC for linker
+    static string def;
 
-	static Stopwatch sw = new();
-	static bool justIL = false;
-	static CSCTargets outputType = CSCTargets.EXE;
-	static void Compile(List<FileInfo> sourceFiles, string? exeOut, List<string> cscExtraArgs, List<string> ilcExtraArgs)
-	{
-		// set paths
-		outName = sourceFiles.First().Name.Replace(".cs", "");
-		outDir = cwd;
+    static Stopwatch sw = new();
+    static CSCTargets outputType = CSCTargets.exe;
 
-		if (exeOut != null)
-		{
-			// remove trailing "\"s if any
-			while (exeOut.EndsWith(@"\"))
-			{
-				exeOut = exeOut.Remove(exeOut.Length - 1);
-			}
+    static void Compile(List<FileInfo> sourceFiles, string? exeOut, List<string> cscExtraArgs, List<string> ilcExtraArgs)
+    {
+        // set paths
+        outName = sourceFiles.First().Name.Replace(".cs", "");
+        outDir = cwd;
 
-			if (exeOut.Contains("/"))
-			{
-				Print("Only windows style paths supported", "RED");
-				return;
-			}
+        if (exeOut != null)
+        {
+            // remove trailing "\"s if any
+            while (exeOut.EndsWith(@"\"))
+            {
+                exeOut = exeOut.Remove(exeOut.Length - 1);
+            }
 
-			if (exeOut.Contains(@"\") || Directory.Exists(Path.Join(cwd, exeOut)))
-			{ // is path
-				string[] parts = exeOut.Split(@"\");
-				string parent = exeOut.Replace(parts.Last(), ""); // exeOut with the last part removed
-				if (Directory.Exists(exeOut))
-				{
-					outDir = exeOut;
-				}
-				else if (Directory.Exists(parent))
-				{
-					outName = parts.Last().Replace(".exe", "");
-					outDir = parent;
-				}
-			}
-			else
-			{
-				outName = exeOut.Replace(".exe", "");
-			}
-		}
+            if (exeOut.Contains("/"))
+            {
+                Print("Only windows style paths supported", "RED");
+                return;
+            }
 
-		if (!justIL)
-		{
-			Directory.CreateDirectory(tmpDir);
-			ilOut = Path.Join(tmpDir, $"{outName}.il.out");
-			objOut = Path.Join(tmpDir, $"{outName}.obj");
-			outPath = outputType switch
-			{
-				CSCTargets.EXE => Path.Join(outDir, $"{outName}.exe"),
-				CSCTargets.WINEXE => Path.Join(outDir, $"{outName}.exe"),
-				CSCTargets.LIBRARY => Path.Join(outDir, $"{outName}.dll"),
-			};
-		}
-		else
-		{
-			ilOut = Path.Join(outDir, $"{outName}.il.out");
-		}
+            if (exeOut.Contains(@"\") || Directory.Exists(Path.Join(cwd, exeOut)))
+            { // is path
+                string[] parts = exeOut.Split(@"\");
+                string parent = exeOut.Replace(parts.Last(), ""); // exeOut with the last part removed
+                if (Directory.Exists(exeOut))
+                {
+                    outDir = exeOut;
+                }
+                else if (Directory.Exists(parent))
+                {
+                    outName = parts.Last().Replace(".exe", "");
+                    outDir = parent;
+                }
+            }
+            else
+            {
+                outName = exeOut.Replace(".exe", "");
+            }
+        }
 
-		if (outputType == CSCTargets.LIBRARY)
-		{
-			def = Path.Join(tmpDir, $"{outName}.def");
-			cscExtraArgs.Add($"/target:library");
-			ilcExtraArgs.AddRange(["--nativelib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
-			linkerExraArgs.AddRange(["/dll", $"/def:{def}", "/noimplib"]);
-		}
-		else if (outputType == CSCTargets.WINEXE) { cscExtraArgs.Add($"/target:winexe"); }
+        Directory.CreateDirectory(tmpDir);
+        ilOut = outputType switch {
+            CSCTargets.lib => Path.Join(tmpDir, $"{outName}.dll"),
+            _ => Path.Join(tmpDir, $"{outName}.il.out")
+        };
+        objOut = Path.Join(tmpDir, $"{outName}.obj");
+        outPath = outputType switch
+        {
+            CSCTargets.exe => Path.Join(outDir, $"{outName}.exe"),
+            CSCTargets.winexe => Path.Join(outDir, $"{outName}.exe"),
+            CSCTargets.lib => Path.Join(outDir, $"{outName}.dll"),
+            CSCTargets.nativelib => Path.Join(outDir, $"{outName}.dll"),
+        };
 
-		sw.Start();
-		if (!HandleError(CscCompile(sourceFiles, cscExtraArgs))) return;
-		if (justIL) { Finish(); return; }
-		if (!HandleError(ILCompile(ilcExtraArgs))) return;
-		if (!HandleError(Link(linkerExraArgs))) return;
-		Finish();
-	}
+        if (outputType == CSCTargets.nativelib)
+        {
+            def = Path.Join(tmpDir, $"{outName}.def");
+            cscExtraArgs.Add($"/target:library");
+            ilcExtraArgs.AddRange(["--nativelib", "--export-unmanaged-entrypoints", $"--exportsfile:{def}"]);
+            linkerExraArgs.AddRange(["/dll", $"/def:{def}", "/noimplib"]);
+        }
+        else if (outputType == CSCTargets.winexe) { cscExtraArgs.Add($"/target:winexe"); }
+        else if (outputType == CSCTargets.lib) { cscExtraArgs.Add($"/target:library"); }
 
-	static void Print(string message, string? color = null, int[]? rgb = null)
-	{
-		string code;
-		if (color != null)
-		{
-			COLORS.TryGetValue(color.ToUpper(), out string colorCode);
-			code = colorCode == null ? NORMAL : colorCode;
-			Console.Error.WriteLine($"{code}{message}{NORMAL}");
-			return;
-		}
-		if (rgb.Length != 3) return;
-		string rgbCode = $"\x1b[38;2;{rgb[0]};{rgb[1]};{rgb[2]}m";
-		Console.Error.WriteLine($"{rgbCode}{message}{NORMAL}");
-	}
+        sw.Start();
+        if (!HandleError(CscCompile(sourceFiles, cscExtraArgs))) return;
+        if (outputType == CSCTargets.lib) {
+            File.Replace(ilOut, outPath, null);
+            Finish(); return; 
+        }
+        if (!HandleError(ILCompile(ilcExtraArgs))) return;
+        if (!HandleError(Link(linkerExraArgs))) return;
+        Finish();
+    }
 
-	static bool HandleError(bool result)
-	{
-		if (!result)
-		{
-			sw.Stop();
-			if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
-			Print($"Compilation failed", "RED");
-		}
-		return result;
-	}
+    static void Print(string message, string? color = null, int[]? rgb = null)
+    {
+        string code;
+        if (color != null)
+        {
+            COLORS.TryGetValue(color.ToUpper(), out string colorCode);
+            code = colorCode == null ? NORMAL : colorCode;
+            Console.Error.WriteLine($"{code}{message}{NORMAL}");
+            return;
+        }
+        if (rgb.Length != 3) return;
+        string rgbCode = $"\x1b[38;2;{rgb[0]};{rgb[1]};{rgb[2]}m";
+        Console.Error.WriteLine($"{rgbCode}{message}{NORMAL}");
+    }
 
-	static void Finish()
-	{
-		sw.Stop();
-		Print($"Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {outPath}", "GREEN");
-		if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
-	}
+    static bool HandleError(bool result)
+    {
+        if (!result)
+        {
+            sw.Stop();
+            if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
+            Print($"Compilation failed", "RED");
+        }
+        return result;
+    }
 
-	static bool verbose = false;
-	static void Log(string text)
-	{
-		if (verbose) Print(text, rgb: [100, 100, 100]);
-	}
+    static void Finish()
+    {
+        sw.Stop();
+        Print($"Compilation finished in {(double)sw.ElapsedMilliseconds / 1000}s, output written to {outPath}", "GREEN");
+        if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
+    }
 
-	public static void CallCompiler(string compiler, string argString)
-	{
-		ProcessStartInfo psi = new()
-		{
-			FileName = compiler,
-			Arguments = argString,
-		};
-		Process process = new()
-		{
-			StartInfo = psi,
-		};
-		process.Start();
-		process.WaitForExit();
-	}
+    static bool verbose = false;
+    static void Log(string text)
+    {
+        if (verbose) Print(text, rgb: [100, 100, 100]);
+    }
 
-	static bool CscCompile(List<FileInfo> sourceFiles, List<string> args)
-	{
-		Log("CSCCompile...");
-		string argString = $"/noconfig /out:{ilOut} /nologo /nostdlib /nosdkpath /unsafe";
-		foreach (FileInfo sourceFile in sourceFiles)
-		{
-			argString += $" \"{sourceFile.FullName}\"";
-		}
-		foreach (string dll in Directory.GetFiles(refs).Where(file => file.EndsWith(".dll")))
-		{
-			argString += $" /r:\"{new FileInfo(dll).FullName}\"";
-		}
-		foreach (string dll in externalLibs)
-		{
-			argString += $" /r:\"{dll}\"";
-		}
-		foreach (string arg in args)
-		{
-			argString += $" {arg}";
-		}
-		argString += $" {cscExtraArgString}";
-		Log(argString);
-		CallCompiler(csc, argString);
-		var exists = File.Exists(ilOut);
-		return exists;
-	}
+    public static void CallCompiler(string compiler, string argString)
+    {
+        ProcessStartInfo psi = new()
+        {
+            FileName = compiler,
+            Arguments = argString,
+        };
+        Process process = new()
+        {
+            StartInfo = psi,
+        };
+        process.Start();
+        process.WaitForExit();
+    }
 
-	static bool ILCompile(List<string> args)
-	{
-		Log("ILCompile...");
-		string argString = $"{ilOut} --out:{objOut}";
-		argString += $" -r:\"{Path.Join(aotsdk, "*.dll")}\"";
-		argString += $" -r:\"{Path.Join(runtime, "*.dll")}\"";
-		argString += $" --generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN";
-		argString += $" --initassembly:System.Private.CoreLib";
-		argString += $" --initassembly:System.Private.StackTraceMetadata";
-		argString += $" --initassembly:System.Private.TypeLoader";
-		argString += $" --initassembly:System.Private.Reflection.Execution";
-		argString += $" --directpinvokelist:\"{Path.Join(home, @"libs\WindowsAPIs.txt")}\"";
-		argString += $" --directpinvoke:System.Globalization.Native";
-		argString += $" --directpinvoke:System.IO.Compression.Native";
-		argString += $" -O"; // optimize
-		argString += $" -g";
-		argString += $" --dehydrate";
-		argString += $" --stacktracedata frames";
-		argString += $" --scanreflection";
-		// furthur optimizations
-		argString += $" --feature:System.StartupHookProvider.IsSupported=false";
-		argString += $" --feature:System.Diagnostics.Tracing.EventSource.IsSupported=false";
-		argString += $" --feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false";
-		argString += $" --feature:System.Linq.Expressions.CanEmitObjectArrayDelegate=false";
-		argString += $" --feature:System.Globalization.Invariant=true";
-		argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
+    static bool CscCompile(List<FileInfo> sourceFiles, List<string> args)
+    {
+        Log("CSCCompile...");
+        string argString = $"/noconfig /out:{ilOut} /nologo /nostdlib /nosdkpath /unsafe /nullable:enable";
+        foreach (FileInfo sourceFile in sourceFiles)
+        {
+            argString += $" \"{sourceFile.FullName}\"";
+        }
+        foreach (string dll in Directory.GetFiles(refs).Where(file => file.EndsWith(".dll")))
+        {
+            argString += $" /r:\"{new FileInfo(dll).FullName}\"";
+        }
+        foreach (string dll in externalLibs)
+        {
+            argString += $" /r:\"{dll}\"";
+        }
+        foreach (string arg in args)
+        {
+            argString += $" {arg}";
+        }
+        argString += $" {cscExtraArgString}";
+        Log(argString);
+        CallCompiler(csc, argString);
+        var exists = File.Exists(ilOut);
+        return exists;
+    }
 
-		foreach (string dll in externalLibs)
-		{
-			argString += $" -r:\"{dll}\"";
-		}
-		foreach (string arg in args)
-		{
-			argString += $" {arg}";
-		}
-		argString += $" {ilcExtraArgString}";
-		Log(argString);
-		CallCompiler(ilc, argString);
-		return File.Exists(objOut);
-	}
+    static bool ILCompile(List<string> args)
+    {
+        Log("ILCompile...");
+        string argString = $"{ilOut} --out:{objOut}";
+        argString += $" -r:\"{Path.Join(aotsdk, "*.dll")}\"";
+        argString += $" -r:\"{Path.Join(runtime, "*.dll")}\"";
+        argString += $" --generateunmanagedentrypoints:System.Private.CoreLib,HIDDEN";
+        argString += $" --initassembly:System.Private.CoreLib";
+        argString += $" --initassembly:System.Private.StackTraceMetadata";
+        argString += $" --initassembly:System.Private.TypeLoader";
+        argString += $" --initassembly:System.Private.Reflection.Execution";
+        argString += $" --directpinvokelist:\"{Path.Join(home, @"libs\WindowsAPIs.txt")}\"";
+        argString += $" --directpinvoke:System.Globalization.Native";
+        argString += $" --directpinvoke:System.IO.Compression.Native";
+        argString += $" -O"; // optimize
+        argString += $" -g";
+        argString += $" --dehydrate";
+        argString += $" --stacktracedata frames";
+        argString += $" --scanreflection";
+        // furthur optimizations
+        argString += $" --feature:System.StartupHookProvider.IsSupported=false";
+        argString += $" --feature:System.Diagnostics.Tracing.EventSource.IsSupported=false";
+        argString += $" --feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false";
+        argString += $" --feature:System.Linq.Expressions.CanEmitObjectArrayDelegate=false";
+        argString += $" --feature:System.Globalization.Invariant=true";
+        argString += $" --feature:System.Diagnostics.Debugger.IsSupported=false";
 
-	static bool Link(List<string> args)
-	{
-		Log("Linking...");
-		string argString = $"{objOut} /out:{outPath} /nodefaultlib /nologo";
-		argString += outputType switch
-		{
-			CSCTargets.EXE => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
-			CSCTargets.WINEXE => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
-			CSCTargets.LIBRARY => $" \"{Path.Join(aotsdk, "bootstrapperdll.obj")}\"",
-		};
-		argString += outputType switch
-		{
-			CSCTargets.EXE => $" /subsystem:console",
-			CSCTargets.WINEXE => $" /subsystem:windows /entry:wmainCRTStartup",
-			_ => ""
-		};
-		argString += $" \"{Path.Join(aotsdk, "dllmain.obj")}\"";
-		argString += $" \"{Path.Join(aotsdk, "Runtime.ServerGC.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "standalonegc-disabled.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "aotminipal.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "brotlicommon.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "eventpipe-enabled.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "Runtime.WorkstationGC.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "brotlidec.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "brotlienc.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "Runtime.VxsortEnabled.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "System.Globalization.Native.Aot.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}\"";
-		argString += $" \"{Path.Join(aotsdk, "zlibstatic.lib")}\"";
-		argString += $" \"{Path.Join(kits, "advapi32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "bcrypt.lib")}\"";
-		argString += $" \"{Path.Join(kits, "crypt32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "iphlpapi.lib")}\"";
-		argString += $" \"{Path.Join(kits, "kernel32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "mswsock.lib")}\"";
-		argString += $" \"{Path.Join(kits, "ncrypt.lib")}\"";
-		argString += $" \"{Path.Join(kits, "ntdll.lib")}\"";
-		argString += $" \"{Path.Join(kits, "ole32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "oleaut32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "secur32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "user32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "uuid.lib")}\"";
-		argString += $" \"{Path.Join(kits, "version.lib")}\"";
-		argString += $" \"{Path.Join(kits, "ws2_32.lib")}\"";
-		argString += $" \"{Path.Join(kits, "synchronization.lib")}\"";
+        foreach (string dll in externalLibs)
+        {
+            argString += $" -r:\"{dll}\"";
+        }
+        foreach (string arg in args)
+        {
+            argString += $" {arg}";
+        }
+        argString += $" {ilcExtraArgString}";
+        Log(argString);
+        CallCompiler(ilc, argString);
+        return File.Exists(objOut);
+    }
 
-		///<summary>
-		///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
-		///</summary>
+    static bool Link(List<string> args)
+    {
+        Log("Linking...");
+        string argString = $"{objOut} /out:{outPath} /nodefaultlib /nologo";
+        argString += outputType switch
+        {
+            CSCTargets.exe => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
+            CSCTargets.lib => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
+            CSCTargets.winexe => $" \"{Path.Join(aotsdk, "bootstrapper.obj")}\"",
+            CSCTargets.nativelib => $" \"{Path.Join(aotsdk, "bootstrapperdll.obj")}\"",
+        };
+        argString += outputType switch
+        {
+            CSCTargets.exe => $" /subsystem:console",
+            CSCTargets.winexe => $" /subsystem:windows /entry:wmainCRTStartup",
+            _ => ""
+        };
+        argString += $" \"{Path.Join(aotsdk, "dllmain.obj")}\"";
+        argString += $" \"{Path.Join(aotsdk, "Runtime.ServerGC.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "standalonegc-disabled.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "aotminipal.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "brotlicommon.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "eventpipe-enabled.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "Runtime.WorkstationGC.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "brotlidec.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "brotlienc.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "Runtime.VxsortEnabled.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "System.Globalization.Native.Aot.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "System.IO.Compression.Native.Aot.lib")}\"";
+        argString += $" \"{Path.Join(aotsdk, "zlibstatic.lib")}\"";
+        argString += $" \"{Path.Join(kits, "advapi32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "bcrypt.lib")}\"";
+        argString += $" \"{Path.Join(kits, "crypt32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "iphlpapi.lib")}\"";
+        argString += $" \"{Path.Join(kits, "kernel32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "mswsock.lib")}\"";
+        argString += $" \"{Path.Join(kits, "ncrypt.lib")}\"";
+        argString += $" \"{Path.Join(kits, "ntdll.lib")}\"";
+        argString += $" \"{Path.Join(kits, "ole32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "oleaut32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "secur32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "user32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "uuid.lib")}\"";
+        argString += $" \"{Path.Join(kits, "version.lib")}\"";
+        argString += $" \"{Path.Join(kits, "ws2_32.lib")}\"";
+        argString += $" \"{Path.Join(kits, "synchronization.lib")}\"";
 
-		// actual crt
-		// use ucrt instead of statically linking libucrt since ucrt is now part of windows 
-		argString += $" \"{Path.Join(kits, "ucrt.lib")}\"";
-		// crt initializer (crt startup)
-		argString += $" \"{Path.Join(msvc, "libcmt.lib")}\"";
-		// C++ multithreaded runtime
-		argString += $" \"{Path.Join(msvc, "msvcprt.lib")}\"";
-		argString += $" \"{Path.Join(msvc, "vcruntime.lib")}\"";
-		argString += $" \"{Path.Join(msvc, "oldnames.lib")}\"";
+        ///<summary>
+        ///https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
+        ///</summary>
 
-		foreach (string arg in args)
-		{
-			argString += $" {arg}";
-		}
-		argString += $" {lldExtraArgString}";
-		Log(argString);
-		CallCompiler(linker, argString);
-		return File.Exists(outPath);
-	}
+        // actual crt
+        // use ucrt instead of statically linking libucrt since ucrt is now part of windows 
+        argString += $" \"{Path.Join(kits, "ucrt.lib")}\"";
+        // crt initializer (crt startup)
+        argString += $" \"{Path.Join(msvc, "libcmt.lib")}\"";
+        // C++ multithreaded runtime
+        argString += $" \"{Path.Join(msvc, "msvcprt.lib")}\"";
+        argString += $" \"{Path.Join(msvc, "vcruntime.lib")}\"";
+        argString += $" \"{Path.Join(msvc, "oldnames.lib")}\"";
+
+        foreach (string arg in args)
+        {
+            argString += $" {arg}";
+        }
+        argString += $" {lldExtraArgString}";
+        Log(argString);
+        CallCompiler(linker, argString);
+        return File.Exists(outPath);
+    }
 }
 
 class CustomVersionAction : SynchronousCommandLineAction
 {
-	public override int Invoke(ParseResult ps)
-	{
-		Console.WriteLine($"v{Dflat.version}");
-		Console.Write($"CSC: ");
-		Dflat.CallCompiler(Dflat.csc, "/version");
-		Console.Write($"ILC: ");
-		Dflat.CallCompiler(Dflat.ilc, "--version");
-		Console.WriteLine($"Runtime: {FileVersionInfo.GetVersionInfo(Path.Join(Dflat.runtime, "System.dll")).ProductVersion}");
-		return 0;
-	}
+    public override int Invoke(ParseResult ps)
+    {
+        Console.WriteLine($"v{Dflat.version}");
+        Console.Write($"CSC: ");
+        Dflat.CallCompiler(Dflat.csc, "/version");
+        Console.Write($"ILC: ");
+        Dflat.CallCompiler(Dflat.ilc, "--version");
+        Console.WriteLine($"Runtime: {FileVersionInfo.GetVersionInfo(Path.Join(Dflat.runtime, "System.dll")).ProductVersion}");
+        return 0;
+    }
 }
 
 enum CSCTargets
 {
-	EXE,
-	WINEXE,
-	LIBRARY,
+    exe,
+    winexe,
+    lib,
+    nativelib
 }
 
 enum CSCPlatforms
 {
-	x86,
-	Itamium,
-	x64,
-	arm,
-	arm64,
-	anycpu32bitpreferred,
-	anycpu
+    x86,
+    Itamium,
+    x64,
+    arm,
+    arm64,
+    anycpu32bitpreferred,
+    anycpu
 }
